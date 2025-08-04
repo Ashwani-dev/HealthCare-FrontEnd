@@ -24,7 +24,7 @@ A modern React-based web application that connects patients with licensed mental
 - **Real-time Video Calls** - Powered by Twilio Video API
 - **Secure Authentication** - JWT-based authentication with role-based access
 - **Modern UI/UX** - Clean, intuitive interface with Tailwind CSS
-- **Payment Integration** - Cashfree payment gateway integration
+- **Payment Integration** - Payment gateway integration (configurable)
 
 ## 🚀 Quick Start
 
@@ -124,7 +124,7 @@ frontend/
 - **Twilio Video SDK** - Client-side video functionality
 
 ### Payment Processing
-- **Cashfree Payments** - Payment gateway integration
+- **Payment Gateway** - Configurable payment gateway integration
 
 ### Development Tools
 - **ESLint** - Code linting and quality assurance
