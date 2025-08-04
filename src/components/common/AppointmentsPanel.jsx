@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AppointmentCard from "./AppointmentCard";
+import MobileFilters from "./MobileFilters";
 
 const STATUS_OPTIONS = [
   { label: "All", value: "ALL" },
@@ -100,19 +101,20 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalElements, page
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-gray-200">
       {/* Results info */}
-      <div className="text-sm text-gray-600">
+      <div className="text-sm text-gray-600 text-center sm:text-left">
         Showing {startElement} to {endElement} of {totalElements} appointments
       </div>
       
       {/* Pagination controls */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         {/* Previous button */}
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 0}
-          className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          className="px-2 sm:px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
         >
-          Previous
+          <span className="hidden sm:inline">Previous</span>
+          <span className="sm:hidden">←</span>
         </button>
         
         {/* Page numbers */}
@@ -123,7 +125,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalElements, page
             
             if (isEllipsis) {
               return (
-                <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-500">
+                <span key={`ellipsis-${index}`} className="px-2 sm:px-3 py-2 text-gray-500">
                   ...
                 </span>
               );
@@ -133,7 +135,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalElements, page
               <button
                 key={pageNum}
                 onClick={() => onPageChange(pageNum)}
-                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                className={`px-2 sm:px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
                   isCurrentPage
                     ? "bg-blue-600 text-white border border-blue-600"
                     : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
@@ -149,9 +151,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalElements, page
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages - 1}
-          className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          className="px-2 sm:px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
         >
-          Next
+          <span className="hidden sm:inline">Next</span>
+          <span className="sm:hidden">→</span>
         </button>
       </div>
     </div>
@@ -222,9 +225,23 @@ const AppointmentsPanel = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 h-[80vh] flex flex-col">
-      {/* Filters & Search */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-8 h-[80vh] flex flex-col">
+      {/* Mobile Filters */}
+      <MobileFilters
+        dateFilters={DATE_FILTERS}
+        statusOptions={STATUS_OPTIONS}
+        currentDateFilter={effectiveDateFilter}
+        currentStatus={effectiveStatus}
+        onDateFilterChange={handleDateFilterChange}
+        onStatusChange={handleStatusChange}
+        showSearch={showSearch}
+        searchValue={effectiveSearch}
+        onSearchChange={handleSearchChange}
+        searchPlaceholder={searchPlaceholder}
+      />
+
+      {/* Desktop Filters & Search */}
+      <div className="hidden lg:flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
         {/* Date Filters */}
         <div className="flex gap-3 flex-wrap">
           {DATE_FILTERS.map(f => (
@@ -276,12 +293,12 @@ const AppointmentsPanel = ({
       {/* Sort Options (only for paginated mode) */}
       {isPaginated && onSortChange && (
         <div className="mb-6">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <label className="text-sm font-medium text-gray-700">Sort by:</label>
             <select
               value={currentSort}
               onChange={(e) => onSortChange(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 w-full sm:w-auto"
             >
               {SORT_OPTIONS.map(option => (
                 <option key={option.value} value={option.value}>
@@ -294,9 +311,9 @@ const AppointmentsPanel = ({
       )}
       
       {/* Appointments List */}
-      <div className="space-y-6 overflow-y-auto flex-1 pr-2">
+      <div className="space-y-4 lg:space-y-6 overflow-y-auto flex-1 pr-0 lg:pr-2">
         {filteredAppointments.length === 0 ? (
-          <div className="text-center text-gray-500 mt-12">
+          <div className="text-center text-gray-500 mt-8 lg:mt-12 px-4">
             <div className="text-lg font-medium mb-2">No appointments found</div>
             <div className="text-sm">Try adjusting your filters or search terms</div>
           </div>

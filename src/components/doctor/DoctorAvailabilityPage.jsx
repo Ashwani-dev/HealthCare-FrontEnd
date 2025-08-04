@@ -75,7 +75,7 @@ const SpinnerIcon = () => (
 
 const ToggleSwitch = ({ checked, onChange, label }) => (
   <label className="flex items-center cursor-pointer select-none">
-    <span className="mr-3 font-medium text-gray-700">{label}</span>
+    <span className="mr-3 font-medium text-gray-700 text-sm lg:text-base">{label}</span>
     <span className="relative">
       <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
       <span className="block w-10 h-6 bg-gray-300 rounded-full shadow-inner transition-colors duration-200"></span>
@@ -225,16 +225,16 @@ const DoctorAvailabilityPage = () => {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto mt-12 px-6">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
+      <div className="max-w-6xl mx-auto mt-8 lg:mt-12 px-4 lg:px-6">
+        <div className="mb-6 lg:mb-8">
+          <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-800 mb-3">
             Manage Your Availability
           </h1>
-          <p className="text-lg text-gray-600 leading-relaxed">
+          <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
             Set your weekly schedule to let patients know when you're available for appointments.
           </p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:p-8">
           <div className="flex justify-center items-center h-32">
             <div className="flex items-center text-gray-600 text-lg">
               <SpinnerIcon />
@@ -247,10 +247,10 @@ const DoctorAvailabilityPage = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto mt-12 px-6 pb-8">
+    <div className="max-w-6xl mx-auto mt-8 lg:mt-12 px-4 lg:px-6 pb-8">
       {/* Toast Notification */}
       {showToast && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
+        <div className={`fixed top-4 left-4 right-4 lg:right-auto lg:left-auto lg:right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
           msg.includes("Failed") ? "bg-red-500 text-white" : "bg-green-500 text-white"
         }`}>
           <div className="flex items-center">
@@ -267,67 +267,70 @@ const DoctorAvailabilityPage = () => {
       )}
 
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
+      <div className="mb-6 lg:mb-8">
+        <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-800 mb-3">
           Manage Your Availability
         </h1>
-        <p className="text-lg text-gray-600 leading-relaxed">
+        <p className="text-base lg:text-lg text-gray-600 leading-relaxed">
           Set your weekly schedule to let patients know when you're available for appointments.
         </p>
       </div>
 
       {/* Availability Section Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-8 mb-8">
         <div className="flex items-center mb-6">
           <CalendarIcon className="text-blue-600 mr-3" />
-          <h3 className="text-xl font-bold text-gray-800">Set Your Weekly Availability</h3>
+          <h3 className="text-lg lg:text-xl font-bold text-gray-800">Set Your Weekly Availability</h3>
         </div>
         
         <div className="space-y-3">
           {DAYS.map((day, index) => (
             <div 
               key={day} 
-              className={`flex items-center p-4 rounded-lg transition-all duration-200 hover:bg-gray-50 ${
+              className={`flex flex-col lg:flex-row lg:items-center p-4 rounded-lg transition-all duration-200 hover:bg-gray-50 ${
                 index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
               } border border-gray-100`}
             >
-              {/* Checkbox */}
-              <input
-                type="checkbox"
-                checked={availability[day].isAvailable}
-                onChange={() => setAvailability((prev) => ({
-                  ...prev,
-                  [day]: {
-                    ...prev[day],
-                    isAvailable: !prev[day].isAvailable,
-                    slots: !prev[day].isAvailable && prev[day].slots.length === 0 ? [{ startTime: "", endTime: "" }] : prev[day].slots
-                  }
-                }))}
-                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 transition-all duration-200"
-              />
-              
-              {/* Day Name */}
-              <div className="w-32 font-semibold text-gray-700 ml-4">
-                {day.charAt(0) + day.slice(1).toLowerCase()}
+              {/* Top Row - Day and Checkbox */}
+              <div className="flex items-center justify-between lg:justify-start mb-3 lg:mb-0">
+                {/* Checkbox */}
+                <input
+                  type="checkbox"
+                  checked={availability[day].isAvailable}
+                  onChange={() => setAvailability((prev) => ({
+                    ...prev,
+                    [day]: {
+                      ...prev[day],
+                      isAvailable: !prev[day].isAvailable,
+                      slots: !prev[day].isAvailable && prev[day].slots.length === 0 ? [{ startTime: "", endTime: "" }] : prev[day].slots
+                    }
+                  }))}
+                  className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 transition-all duration-200"
+                />
+                
+                {/* Day Name */}
+                <div className="font-semibold text-gray-700 ml-4 lg:w-32">
+                  {day.charAt(0) + day.slice(1).toLowerCase()}
+                </div>
               </div>
               
               {/* Time Slots Display */}
-              <div className="flex-1 ml-4">
+              <div className="flex-1 mb-3 lg:mb-0 lg:ml-4">
                 {availability[day].isAvailable && availability[day].slots.length > 0 ? (
-                  <span className="text-sm text-gray-700 font-medium">
+                  <div className="flex flex-wrap gap-2">
                     {availability[day].slots.map((slot, idx) => (
-                      <span key={idx} className="inline-block bg-blue-50 text-blue-700 px-3 py-1 rounded-full mr-2 mb-1">
+                      <span key={idx} className="inline-block bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
                         {slot.startTime && slot.endTime ? `${formatTimeToAMPM(slot.startTime)} - ${formatTimeToAMPM(slot.endTime)}` : "(edit slots)"}
                       </span>
                     ))}
-                  </span>
+                  </div>
                 ) : (
                   <span className="text-sm text-gray-400 italic">No slots scheduled</span>
                 )}
               </div>
               
               {/* Action Buttons */}
-              <div className="flex items-center space-x-2 ml-4">
+              <div className="flex items-center justify-between lg:justify-end space-x-2 lg:ml-4">
                 <button
                   type="button"
                   onClick={() => openModal(day)}
@@ -371,14 +374,14 @@ const DoctorAvailabilityPage = () => {
       </div>
 
       {/* Save All Button - Sticky on larger screens */}
-      <div className="sticky bottom-6 z-40">
+      <div className="sticky bottom-4 lg:bottom-6 z-40">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="text-sm text-gray-600 text-center lg:text-left">
               Ready to save your availability schedule?
             </div>
             <button
-              className="flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed w-full lg:w-auto"
               onClick={handleSaveAll}
               disabled={saving}
             >
@@ -398,17 +401,17 @@ const DoctorAvailabilityPage = () => {
         </div>
       </div>
 
-      {/* Enhanced Modal */}
+      {/* Enhanced Modal - Mobile Optimized */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-auto relative animate-fadeIn">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-auto relative animate-fadeIn max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-800">
+            <div className="flex items-center justify-between p-4 lg:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+              <h3 className="text-lg lg:text-xl font-bold text-gray-800">
                 {modalDay && modalDay.charAt(0) + modalDay.slice(1).toLowerCase()} Schedule
               </h3>
               <button
-                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2"
                 onClick={() => setShowModal(false)}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -418,7 +421,7 @@ const DoctorAvailabilityPage = () => {
             </div>
 
             {/* Modal Content */}
-            <div className="p-6">
+            <div className="p-4 lg:p-6">
               <ToggleSwitch
                 checked={modalAvailable}
                 onChange={() => setModalAvailable((v) => !v)}
@@ -442,9 +445,9 @@ const DoctorAvailabilityPage = () => {
                   {modalSlots.map((slot, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                      className="flex flex-col lg:flex-row lg:items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200"
                     >
-                      <div className="flex-1 grid grid-cols-2 gap-3">
+                      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
                           <select
@@ -477,7 +480,7 @@ const DoctorAvailabilityPage = () => {
                         </div>
                       </div>
                       <button
-                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 self-start lg:self-auto"
                         onClick={() => deleteSlot(idx)}
                         title="Delete slot"
                         type="button"
@@ -499,7 +502,7 @@ const DoctorAvailabilityPage = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex gap-3 p-6 border-t border-gray-200">
+            <div className="flex gap-3 p-4 lg:p-6 border-t border-gray-200 sticky bottom-0 bg-white">
               <button
                 className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-all duration-200"
                 onClick={() => setShowModal(false)}

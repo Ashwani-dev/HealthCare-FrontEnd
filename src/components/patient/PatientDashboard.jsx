@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import AppointmentsPanel from "../common/AppointmentsPanel";
 import { fetchPatientAppointments, fetchPatientProfile, cancelAppointment } from "../../api/api";
 import { useNavigate } from "react-router-dom";
-import VideoCall from "../common/VideoCall";
+import VideoCallWrapper from "../common/VideoCallWrapper";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 
@@ -216,10 +216,10 @@ const PatientDashboard = () => {
           </div>
           
           {/* Video Call Modal */}
-          <Dialog open={!!videoCallAppointment} onClose={() => setVideoCallAppointment(null)} maxWidth="md" fullWidth>
+          <Dialog open={!!videoCallAppointment} onClose={() => setVideoCallAppointment(null)} fullScreen>
             <DialogContent sx={{ p: 0 }}>
               {videoCallAppointment && (
-                <VideoCall
+                <VideoCallWrapper
                   appointmentId={videoCallAppointment.appointmentId}
                   userType="PATIENT"
                   userId={user?.userId}

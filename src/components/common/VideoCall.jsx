@@ -184,6 +184,43 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
     }
   }, [room, isVideoEnabled]);
 
+  // Sync UI state with actual track states
+  useEffect(() => {
+    if (!room) return;
+    
+    const syncTrackStates = () => {
+      const audioTracks = Array.from(room.localParticipant.audioTracks.values());
+      const videoTracks = Array.from(room.localParticipant.videoTracks.values());
+      
+      // Check if audio is actually enabled
+      const audioEnabled = audioTracks.length > 0 && audioTracks.some(pub => pub.track && pub.track.isEnabled);
+      if (audioEnabled !== isAudioEnabled) {
+        setIsAudioEnabled(audioEnabled);
+      }
+      
+      // Check if video is actually enabled
+      const videoEnabled = videoTracks.length > 0 && videoTracks.some(pub => pub.track && pub.track.isEnabled);
+      if (videoEnabled !== isVideoEnabled) {
+        setIsVideoEnabled(videoEnabled);
+      }
+    };
+    
+    // Sync immediately
+    syncTrackStates();
+    
+    // Listen for track publications and unpublications
+    const handleTrackPublished = () => syncTrackStates();
+    const handleTrackUnpublished = () => syncTrackStates();
+    
+    room.localParticipant.on('trackPublished', handleTrackPublished);
+    room.localParticipant.on('trackUnpublished', handleTrackUnpublished);
+    
+    return () => {
+      room.localParticipant.off('trackPublished', handleTrackPublished);
+      room.localParticipant.off('trackUnpublished', handleTrackUnpublished);
+    };
+  }, [room, isAudioEnabled, isVideoEnabled]);
+
   // Clean disconnect on manual end or tab close
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -201,25 +238,55 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
   // Device controls
   const toggleAudio = useCallback(() => {
     if (!room) return;
-    room.localParticipant.audioTracks.forEach((publication) => {
-      if (isAudioEnabled) {
-        publication.track.disable();
-      } else {
-        publication.track.enable();
+    
+    const audioTracks = Array.from(room.localParticipant.audioTracks.values());
+    
+    if (audioTracks.length === 0) {
+      // If no audio tracks exist, try to publish one
+      if (!isAudioEnabled) {
+        room.localParticipant.setMicrophoneEnabled(true);
+        setIsAudioEnabled(true);
+      }
+      return;
+    }
+    
+    audioTracks.forEach((publication) => {
+      if (publication.track) {
+        if (isAudioEnabled) {
+          publication.track.disable();
+        } else {
+          publication.track.enable();
+        }
       }
     });
+    
     setIsAudioEnabled((prev) => !prev);
   }, [room, isAudioEnabled]);
 
   const toggleVideo = useCallback(() => {
     if (!room) return;
-    room.localParticipant.videoTracks.forEach((publication) => {
-      if (isVideoEnabled) {
-        publication.track.disable();
-      } else {
-        publication.track.enable();
+    
+    const videoTracks = Array.from(room.localParticipant.videoTracks.values());
+    
+    if (videoTracks.length === 0) {
+      // If no video tracks exist, try to publish one
+      if (!isVideoEnabled) {
+        room.localParticipant.setCameraEnabled(true);
+        setIsVideoEnabled(true);
+      }
+      return;
+    }
+    
+    videoTracks.forEach((publication) => {
+      if (publication.track) {
+        if (isVideoEnabled) {
+          publication.track.disable();
+        } else {
+          publication.track.enable();
+        }
       }
     });
+    
     setIsVideoEnabled((prev) => !prev);
   }, [room, isVideoEnabled]);
 
@@ -250,69 +317,205 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
     );
   }
   return (
-    <Card sx={{ maxWidth: 900, mx: "auto", my: 3, p: 2, boxShadow: 4 }}>
-      <CardContent>
-        <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center" justifyContent="center">
-          {/* Remote participant video (main) */}
-          <Box
-            sx={{
-              flex: 2,
-              minWidth: 0,
-              minHeight: 220,
-              background: theme.palette.grey[200],
-              borderRadius: 2,
-              overflow: "hidden",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              position: "relative",
-              aspectRatio: "16/9",
-            }}
-          >
-            <video ref={remoteVideoRef} autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            <audio ref={remoteAudioRef} autoPlay playsInline style={{ display: "none" }} />
-            {!hasRemoteParticipant && (
-              <Typography variant="subtitle1" sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", color: "grey.600" }}>
-                Waiting for other participant to join...
+    <Box 
+      sx={{ 
+        minHeight: "100vh",
+        background: theme.palette.background.default,
+        display: "flex",
+        flexDirection: "column"
+      }}
+    >
+      {/* Header */}
+      <Box 
+        sx={{ 
+          p: 2, 
+          background: theme.palette.primary.main, 
+          color: "white",
+          textAlign: "center"
+        }}
+      >
+        <Typography variant="h6" fontWeight="bold">
+          Video Consultation
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+          {userType === 'DOCTOR' ? 'Doctor' : 'Patient'} Session
+        </Typography>
+      </Box>
+
+      {/* Main Video Area */}
+      <Box 
+        sx={{ 
+          flex: 1,
+          position: "relative",
+          background: theme.palette.grey[900]
+        }}
+      >
+        {/* Remote participant video (full screen) */}
+        <Box
+          sx={{
+            width: "100%",
+            height: "100%",
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+        >
+          <video 
+            ref={remoteVideoRef} 
+            autoPlay 
+            playsInline 
+            style={{ 
+              width: "100%", 
+              height: "100%", 
+              objectFit: "cover" 
+            }} 
+          />
+          <audio ref={remoteAudioRef} autoPlay playsInline style={{ display: "none" }} />
+          
+          {!hasRemoteParticipant && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                textAlign: "center",
+                color: "white"
+              }}
+            >
+              <Typography variant="h6" mb={1}>
+                Waiting for {userType === 'DOCTOR' ? 'patient' : 'doctor'} to join...
               </Typography>
-            )}
-          </Box>
-          {/* Local participant video (small preview) */}
-          <Box
-            sx={{
-              flex: 1,
-              minWidth: 120,
-              maxWidth: 200,
-              minHeight: 120,
-              background: theme.palette.grey[300],
-              borderRadius: 2,
-              overflow: "hidden",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              position: "relative",
-              aspectRatio: "4/3",
+              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                Please wait while the other participant connects
+              </Typography>
+            </Box>
+          )}
+        </Box>
+
+        {/* Local participant video (picture-in-picture) */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: 20,
+            right: 20,
+            width: 200,
+            height: 150,
+            background: theme.palette.grey[800],
+            borderRadius: 2,
+            overflow: "hidden",
+            border: "2px solid white",
+            boxShadow: 3
+          }}
+        >
+          <video 
+            ref={localVideoRef} 
+            autoPlay 
+            playsInline 
+            muted 
+            style={{ 
+              width: "100%", 
+              height: "100%", 
+              objectFit: "cover",
+              transform: "scaleX(-1)" // Mirror the local video
+            }} 
+          />
+          
+          {/* Status overlays for local video */}
+          {!isVideoEnabled && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                background: "rgba(0,0,0,0.7)",
+                color: "white",
+                px: 2,
+                py: 1,
+                borderRadius: 1,
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5
+              }}
+            >
+              <VideocamOffIcon sx={{ fontSize: 16 }} />
+              <Typography variant="caption">Off</Typography>
+            </Box>
+          )}
+          
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              position: "absolute", 
+              bottom: 4, 
+              left: 8, 
+              color: "white", 
+              background: "rgba(0,0,0,0.7)", 
+              px: 1, 
+              borderRadius: 0.5 
             }}
           >
-            <video ref={localVideoRef} autoPlay playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            <Typography variant="caption" sx={{ position: "absolute", bottom: 4, left: 8, color: "grey.800", background: "rgba(255,255,255,0.7)", px: 1, borderRadius: 1 }}>
-              You
-            </Typography>
-          </Box>
-        </Stack>
-      </CardContent>
-      <CardActions sx={{ justifyContent: "center", gap: 2 }}>
-        <IconButton onClick={toggleAudio} color={isAudioEnabled ? "primary" : "default"}>
-          {isAudioEnabled ? <MicIcon /> : <MicOffIcon />}
-        </IconButton>
-        <IconButton onClick={toggleVideo} color={isVideoEnabled ? "primary" : "default"}>
-          {isVideoEnabled ? <VideocamIcon /> : <VideocamOffIcon />}
-        </IconButton>
-        <IconButton onClick={handleEndCall} color="error">
-          <CallEndIcon />
-        </IconButton>
-      </CardActions>
-    </Card>
+            You
+          </Typography>
+        </Box>
+
+        {/* Controls (floating at bottom) */}
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 20,
+            left: "50%",
+            transform: "translateX(-50%)",
+            display: "flex",
+            gap: 2,
+            background: "rgba(0,0,0,0.8)",
+            borderRadius: 3,
+            p: 1
+          }}
+        >
+          <IconButton 
+            onClick={toggleAudio} 
+            sx={{ 
+              color: isAudioEnabled ? "white" : "red",
+              background: isAudioEnabled ? "rgba(255,255,255,0.2)" : "rgba(255,0,0,0.3)",
+              '&:hover': {
+                background: isAudioEnabled ? "rgba(255,255,255,0.3)" : "rgba(255,0,0,0.4)"
+              }
+            }}
+          >
+            {isAudioEnabled ? <MicIcon /> : <MicOffIcon />}
+          </IconButton>
+          
+          <IconButton 
+            onClick={toggleVideo} 
+            sx={{ 
+              color: isVideoEnabled ? "white" : "red",
+              background: isVideoEnabled ? "rgba(255,255,255,0.2)" : "rgba(255,0,0,0.3)",
+              '&:hover': {
+                background: isVideoEnabled ? "rgba(255,255,255,0.3)" : "rgba(255,0,0,0.4)"
+              }
+            }}
+          >
+            {isVideoEnabled ? <VideocamIcon /> : <VideocamOffIcon />}
+          </IconButton>
+          
+          <IconButton 
+            onClick={handleEndCall} 
+            sx={{ 
+              color: "white",
+              background: "rgba(255,0,0,0.8)",
+              '&:hover': {
+                background: "rgba(255,0,0,0.9)"
+              }
+            }}
+          >
+            <CallEndIcon />
+          </IconButton>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
