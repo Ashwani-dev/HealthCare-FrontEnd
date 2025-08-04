@@ -1,0 +1,23 @@
+.bubble-btn {
+  border: none;
+  outline: none;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.bubble-btn.selected {
+  background: #2563eb;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.15);
+}
+
+.bubble-btn:not(.selected):hover {
+  background: #dbeafe;
+} 

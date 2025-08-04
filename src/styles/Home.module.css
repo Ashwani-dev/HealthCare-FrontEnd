@@ -1,0 +1,28 @@
+.container {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  margin: 2rem auto;
+  max-width: 600px;
+  padding: 2rem 1.5rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2563eb;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: #334155;
+  margin-bottom: 2rem;
+  text-align: center;
+} 

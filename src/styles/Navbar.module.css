@@ -1,0 +1,48 @@
+.navbarShadow {
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.07);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #2563eb;
+}
+
+.logo {
+  font-family: 'Segoe UI', 'Arial', sans-serif;
+  letter-spacing: 1px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: color 0.2s;
+}
+.logo:hover {
+  color: #a5b4fc;
+}
+
+.link {
+  color: #fff;
+  font-weight: 500;
+  padding: 0.5rem 1.2rem;
+  border-radius: 9999px;
+  transition: background 0.2s, color 0.2s;
+  text-decoration: none;
+}
+.link:hover {
+  background: #1e40af;
+  color: #a5b4fc;
+}
+
+.logoutBtn {
+  background: #ef4444;
+  color: #fff;
+  font-weight: 500;
+  padding: 0.5rem 1.2rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.logoutBtn:hover {
+  background: #b91c1c;
+  color: #fff;
+} 
