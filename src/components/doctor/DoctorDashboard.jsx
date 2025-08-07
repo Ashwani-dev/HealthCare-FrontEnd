@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import AppointmentsPanel from "../common/AppointmentsPanel";
 import { fetchDoctorAppointments, fetchDoctorAvailability, fetchDoctorProfile, cancelAppointment } from "../../api/api";
-import VideoCallWrapper from "../common/VideoCallWrapper";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
+
 
 // DashboardHeader for Doctor
 const DashboardHeader = ({ doctorLastName, appointmentsTodayCount, availableSlotsThisWeekCount }) => (
@@ -32,11 +31,11 @@ const DashboardHeader = ({ doctorLastName, appointmentsTodayCount, availableSlot
 
 const DoctorDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [availability, setAvailability] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [videoCallAppointment, setVideoCallAppointment] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -164,7 +163,10 @@ const DoctorDashboard = () => {
         <AppointmentsPanel
           appointments={safeAppointments}
           onAction={handleAppointmentAction}
-          onJoinCall={appt => setVideoCallAppointment(appt)}
+                        onJoinCall={appt => {
+                // Navigate to the video preview page
+                navigate(`/video-preview/${appt.appointmentId}/DOCTOR`);
+              }}
           searchField="patientName"
           searchPlaceholder="Search by patient name..."
           // Pagination props
@@ -185,19 +187,7 @@ const DoctorDashboard = () => {
         />
       </div>
       
-      {/* Video Call Modal */}
-      <Dialog open={!!videoCallAppointment} onClose={() => setVideoCallAppointment(null)} fullScreen>
-        <DialogContent sx={{ p: 0 }}>
-          {videoCallAppointment && (
-            <VideoCallWrapper
-              appointmentId={videoCallAppointment.appointmentId}
-              userType="DOCTOR"
-              userId={user?.userId}
-              onEnd={() => setVideoCallAppointment(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 };

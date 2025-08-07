@@ -1,21 +1,19 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Video from "twilio-video";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardActions from "@mui/material/CardActions";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
-import Stack from "@mui/material/Stack";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import VideocamOffIcon from "@mui/icons-material/VideocamOff";
 import MicIcon from "@mui/icons-material/Mic";
 import MicOffIcon from "@mui/icons-material/MicOff";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import { useTheme } from "@mui/material/styles";
-import { createVideoSession, getVideoSession, getVideoToken, endVideoSession } from "../../api/api";
+import { createVideoSession, getVideoSession, getVideoToken, endVideoSession, fetchDoctorProfile, fetchPatientProfile } from "../../api/api";
+import { forceStopAllMediaTracks } from "../../utils/mediaUtils";
+import Logo from "./Logo";
 
 /**
  * VideoCall component for telehealth video sessions.
@@ -26,8 +24,9 @@ import { createVideoSession, getVideoSession, getVideoToken, endVideoSession } f
  * - userType: 'DOCTOR' | 'PATIENT'
  * - userId: number/string
  * - onEnd: function to call when call ends
+ * - sessionData: Object containing existing session data (optional)
  */
-const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
+const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
   const [room, setRoom] = useState(null);
   const [token, setToken] = useState(null);
   const [roomName, setRoomName] = useState(null);
@@ -38,28 +37,66 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
   const [connecting, setConnecting] = useState(false);
   const [remoteParticipants, setRemoteParticipants] = useState([]);
   const [hasRemoteParticipant, setHasRemoteParticipant] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
   const localVideoRef = useRef();
   const remoteVideoRef = useRef();
   const remoteAudioRef = useRef();
   const theme = useTheme();
 
-  // Fetch or create session, then get token, then connect
+  // Helper function to get user display name
+  const getUserDisplayName = () => {
+    if (userProfile?.full_name) {
+      return userProfile.full_name;
+    }
+    // Fallback names if profile fetch fails
+    return userType === 'DOCTOR' ? 'Dr. Lynx' : 'Alex Johnson';
+  };
+
+  // Fetch user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        let profileData;
+        if (userType === 'DOCTOR') {
+          profileData = await fetchDoctorProfile();
+        } else {
+          profileData = await fetchPatientProfile();
+        }
+        setUserProfile(profileData);
+      } catch (error) {
+        // If profile fetch fails, we'll use fallback names
+        setUserProfile(null);
+      }
+    };
+    
+    fetchUserProfile();
+  }, [userType]);
+
+  // Initialize session and get token
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
     setError(null);
-    let session;
-    // Helper: get or create session
-    const getSession = async () => {
+    
+    const initializeSession = async () => {
       try {
-        // Try to get session, if not found, create it
-        try {
-          session = await getVideoSession(appointmentId);
-        } catch (err) {
-          session = await createVideoSession(appointmentId);
+        let session;
+        
+        if (sessionData) {
+          // Use provided session data
+          session = sessionData;
+        } else {
+          // Fallback: try to get session, if not found, create it
+          try {
+            session = await getVideoSession(appointmentId);
+          } catch (err) {
+            session = await createVideoSession(appointmentId);
+          }
         }
+        
         if (!isMounted) return;
         setRoomName(session.twilioRoomName);
+        
         // Get token
         const tk = await getVideoToken(appointmentId, userType, userId);
         if (!isMounted) return;
@@ -70,11 +107,12 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
         setLoading(false);
       }
     };
-    getSession();
+    
+    initializeSession();
     return () => {
       isMounted = false;
     };
-  }, [appointmentId, userType, userId]);
+  }, [appointmentId, userType, userId, sessionData]);
 
   // Connect to Twilio room when token and roomName are available
   useEffect(() => {
@@ -103,7 +141,18 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
         // Listen for local track publications
         room.localParticipant.on('trackPublished', (publication) => {
           if (publication.track && publication.track.kind === 'video') {
-            publication.track.attach(localVideoRef.current);
+            if (localVideoRef.current) {
+              publication.track.attach(localVideoRef.current);
+            }
+          }
+        });
+
+        // Listen for local track unpublications
+        room.localParticipant.on('trackUnpublished', (publication) => {
+          if (publication.track && publication.track.kind === 'video') {
+            if (localVideoRef.current) {
+              localVideoRef.current.srcObject = null;
+            }
           }
         });
 
@@ -112,22 +161,30 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
           setHasRemoteParticipant(true);
           
           // Handle existing tracks
-          participant.tracks.forEach((publication) => {
-            if (publication.isSubscribed) {
-              if (publication.track.kind === "video") {
-                publication.track.attach(remoteVideoRef.current);
-              } else if (publication.track.kind === "audio") {
-                publication.track.attach(remoteAudioRef.current);
+                      participant.tracks.forEach((publication) => {
+              if (publication.isSubscribed) {
+                if (publication.track.kind === "video") {
+                  if (remoteVideoRef.current) {
+                    publication.track.attach(remoteVideoRef.current);
+                  }
+                } else if (publication.track.kind === "audio") {
+                  if (remoteAudioRef.current) {
+                    publication.track.attach(remoteAudioRef.current);
+                  }
+                }
               }
-            }
-          });
+            });
           
           // Handle new track subscriptions
           participant.on("trackSubscribed", (track) => {
             if (track.kind === "video") {
-              track.attach(remoteVideoRef.current);
+              if (remoteVideoRef.current) {
+                track.attach(remoteVideoRef.current);
+              }
             } else if (track.kind === "audio") {
-              track.attach(remoteAudioRef.current);
+              if (remoteAudioRef.current) {
+                track.attach(remoteAudioRef.current);
+              }
             }
           });
           
@@ -178,11 +235,63 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
   useEffect(() => {
     if (room && localVideoRef.current && isVideoEnabled) {
       const localTrack = Array.from(room.localParticipant.videoTracks.values())[0]?.track;
-      if (localTrack) {
-        localTrack.attach(localVideoRef.current);
-      }
+              if (localTrack) {
+          localTrack.attach(localVideoRef.current);
+        }
     }
   }, [room, isVideoEnabled]);
+
+  // Retry video attachment if elements aren't ready
+  useEffect(() => {
+    if (room && isVideoEnabled) {
+      const retryAttachment = () => {
+        if (localVideoRef.current) {
+          const localTrack = Array.from(room.localParticipant.videoTracks.values())[0]?.track;
+          if (localTrack) {
+            localTrack.attach(localVideoRef.current);
+          }
+        }
+      };
+
+      // Try immediately
+      retryAttachment();
+      
+      // Retry after a short delay to ensure DOM is ready
+      const timeoutId = setTimeout(retryAttachment, 500);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [room, isVideoEnabled]);
+
+  // Keep video streams active even when tab is not visible
+  useEffect(() => {
+    if (!room) return;
+
+    const keepStreamsActive = () => {
+      // Ensure local video is still attached
+      if (localVideoRef.current && isVideoEnabled) {
+        const localTrack = Array.from(room.localParticipant.videoTracks.values())[0]?.track;
+        if (localTrack && !localVideoRef.current.srcObject) {
+          localTrack.attach(localVideoRef.current);
+        }
+      }
+
+      // Ensure remote video is still attached
+      if (remoteVideoRef.current && hasRemoteParticipant) {
+        const remoteTracks = Array.from(room.participants.values()).flatMap(p => 
+          Array.from(p.videoTracks.values())
+        );
+        if (remoteTracks.length > 0 && !remoteVideoRef.current.srcObject) {
+          remoteTracks[0].track.attach(remoteVideoRef.current);
+        }
+      }
+    };
+
+    // Check every 2 seconds to ensure streams stay active
+    const intervalId = setInterval(keepStreamsActive, 2000);
+
+    return () => clearInterval(intervalId);
+  }, [room, isVideoEnabled, hasRemoteParticipant]);
 
   // Sync UI state with actual track states
   useEffect(() => {
@@ -229,11 +338,28 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
         endVideoSession(appointmentId);
       }
     };
+
+    // Handle tab visibility changes without stopping media
+    const handleVisibilityChange = () => {
+      // Tab visibility changed, but we keep media active
+    };
+
     window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [room, appointmentId]);
+
+  // Cleanup effect to stop all media tracks when component unmounts
+  useEffect(() => {
+    return () => {
+      // Use utility function for comprehensive cleanup
+      forceStopAllMediaTracks();
+    };
+  }, []);
 
   // Device controls
   const toggleAudio = useCallback(() => {
@@ -291,11 +417,94 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
   }, [room, isVideoEnabled]);
 
   const handleEndCall = useCallback(() => {
+    // Comprehensive function to stop all media tracks
+    const stopAllMediaTracks = () => {
+      try {
+        // Stop all Twilio room tracks first
+        if (room && room.localParticipant) {
+          room.localParticipant.audioTracks.forEach(publication => {
+            if (publication.track) {
+              publication.track.stop();
+            }
+          });
+          
+          room.localParticipant.videoTracks.forEach(publication => {
+            if (publication.track) {
+              publication.track.stop();
+            }
+          });
+        }
+
+        // Stop all remote participant tracks
+        if (room) {
+          room.participants.forEach(participant => {
+            participant.audioTracks.forEach(publication => {
+              if (publication.track) {
+                publication.track.stop();
+              }
+            });
+            
+            participant.videoTracks.forEach(publication => {
+              if (publication.track) {
+                publication.track.stop();
+              }
+            });
+          });
+        }
+
+        // Stop any streams attached to video/audio elements
+        const elements = [localVideoRef.current, remoteVideoRef.current, remoteAudioRef.current];
+        elements.forEach(element => {
+          if (element && element.srcObject) {
+            const stream = element.srcObject;
+            if (stream && stream.getTracks) {
+              stream.getTracks().forEach(track => {
+                track.stop();
+              });
+            }
+            element.srcObject = null;
+          }
+        });
+
+        // Force stop any remaining getUserMedia streams
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          // This will force stop any active media streams
+          navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+            .then(stream => {
+              stream.getTracks().forEach(track => track.stop());
+            })
+            .catch(() => {
+              // Ignore errors as this is just for cleanup
+            });
+        }
+
+        // Clear any stored streams in the component state
+        setRemoteParticipants([]);
+        setHasRemoteParticipant(false);
+        
+              } catch (error) {
+          // Error stopping media tracks
+        }
+    };
+
+    // Disconnect from Twilio room first
     if (room) {
-      room.disconnect();
-      endVideoSession(appointmentId);
+      try {
+        room.disconnect();
+        endVideoSession(appointmentId);
+      } catch (error) {
+        // Error disconnecting from room
+      }
     }
-    if (onEnd) onEnd();
+    
+    // Stop all media tracks using utility function
+    forceStopAllMediaTracks();
+    
+    // Force a small delay to ensure cleanup is complete
+    setTimeout(() => {
+      // Call the onEnd callback
+      if (onEnd) onEnd();
+    }, 200);
   }, [room, appointmentId, onEnd]);
 
   // Optimization tip (for seniors):
@@ -319,26 +528,46 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
   return (
     <Box 
       sx={{ 
-        minHeight: "100vh",
-        background: theme.palette.background.default,
+        height: "100vh",
+        width: "100vw",
+        background: "linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%)",
         display: "flex",
-        flexDirection: "column"
+        flexDirection: "column",
+        overflow: "hidden",
+        position: "fixed",
+        top: 0,
+        left: 0
       }}
     >
       {/* Header */}
       <Box 
         sx={{ 
-          p: 2, 
-          background: theme.palette.primary.main, 
-          color: "white",
-          textAlign: "center"
+          p: 3, 
+          background: "white",
+          borderBottom: "1px solid #e0e0e0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between"
         }}
       >
-        <Typography variant="h6" fontWeight="bold">
-          Video Consultation
-        </Typography>
-        <Typography variant="body2" sx={{ opacity: 0.9 }}>
-          {userType === 'DOCTOR' ? 'Doctor' : 'Patient'} Session
+        {/* Logo and Brand */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ mr: 1 }}>
+            <Logo size="medium" variant="default" />
+          </Box>
+          <Box>
+            <Typography variant="h6" sx={{ color: "#2C3E50", fontWeight: "bold" }}>
+              TheraConnect
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#7F8C8D", fontSize: "0.875rem" }}>
+              Video Consultation
+            </Typography>
+          </Box>
+        </Box>
+        
+        {/* Status */}
+        <Typography variant="body2" sx={{ color: "#7F8C8D", fontWeight: "500" }}>
+          {hasRemoteParticipant ? 'In Session' : `Waiting for ${userType === 'DOCTOR' ? 'patient' : 'therapist'}`}
         </Typography>
       </Box>
 
@@ -347,7 +576,7 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
         sx={{ 
           flex: 1,
           position: "relative",
-          background: theme.palette.grey[900]
+          background: "transparent"
         }}
       >
         {/* Remote participant video (full screen) */}
@@ -365,6 +594,7 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
             ref={remoteVideoRef} 
             autoPlay 
             playsInline 
+            muted={false}
             style={{ 
               width: "100%", 
               height: "100%", 
@@ -381,15 +611,47 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
                 left: "50%",
                 transform: "translate(-50%, -50%)",
                 textAlign: "center",
-                color: "white"
+                zIndex: 1
               }}
             >
-              <Typography variant="h6" mb={1}>
-                Waiting for {userType === 'DOCTOR' ? 'patient' : 'doctor'} to join...
+              {/* Calming background element */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: 200,
+                  height: 200,
+                  borderRadius: "50%",
+                  background: "radial-gradient(circle, rgba(74, 144, 226, 0.1) 0%, rgba(74, 144, 226, 0.05) 50%, transparent 100%)",
+                  animation: "pulse 3s ease-in-out infinite",
+                  "@keyframes pulse": {
+                    "0%, 100%": {
+                      transform: "translate(-50%, -50%) scale(1)",
+                      opacity: 0.3
+                    },
+                    "50%": {
+                      transform: "translate(-50%, -50%) scale(1.1)",
+                      opacity: 0.5
+                    }
+                  }
+                }}
+              />
+              
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  color: "#2C3E50", 
+                  fontWeight: "600",
+                  mb: 2,
+                  position: "relative",
+                  zIndex: 2
+                }}
+              >
+                Waiting for your {userType === 'DOCTOR' ? 'patient' : 'therapist'} to join...
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                Please wait while the other participant connects
-              </Typography>
+
             </Box>
           )}
         </Box>
@@ -400,20 +662,20 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
             position: "absolute",
             top: 20,
             right: 20,
-            width: 200,
-            height: 150,
-            background: theme.palette.grey[800],
-            borderRadius: 2,
+            width: 240,
+            height: 180,
+            background: "white",
+            borderRadius: 3,
             overflow: "hidden",
-            border: "2px solid white",
-            boxShadow: 3
+            border: "2px solid #ADD8E6",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)"
           }}
         >
           <video 
             ref={localVideoRef} 
             autoPlay 
             playsInline 
-            muted 
+            muted={true}
             style={{ 
               width: "100%", 
               height: "100%", 
@@ -432,86 +694,110 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd }) => {
                 transform: "translate(-50%, -50%)",
                 background: "rgba(0,0,0,0.7)",
                 color: "white",
-                px: 2,
-                py: 1,
-                borderRadius: 1,
+                px: 3,
+                py: 1.5,
+                borderRadius: 2,
                 display: "flex",
                 alignItems: "center",
-                gap: 0.5
+                gap: 1
               }}
             >
-              <VideocamOffIcon sx={{ fontSize: 16 }} />
-              <Typography variant="caption">Off</Typography>
+              <VideocamOffIcon sx={{ fontSize: 18 }} />
+              <Typography variant="body2" sx={{ fontWeight: "500" }}>Camera Off</Typography>
             </Box>
           )}
           
+          {/* Patient name label */}
           <Typography 
-            variant="caption" 
+            variant="body2" 
             sx={{ 
               position: "absolute", 
-              bottom: 4, 
-              left: 8, 
-              color: "white", 
-              background: "rgba(0,0,0,0.7)", 
-              px: 1, 
-              borderRadius: 0.5 
+              bottom: 8, 
+              left: 12, 
+              color: "#2C3E50", 
+              background: "rgba(255,255,255,0.9)", 
+              px: 2, 
+              py: 0.5,
+              borderRadius: 1.5,
+              fontWeight: "500",
+              fontSize: "0.875rem"
             }}
           >
-            You
+            {getUserDisplayName()}
           </Typography>
         </Box>
 
         {/* Controls (floating at bottom) */}
         <Box
           sx={{
-            position: "absolute",
-            bottom: 20,
+            position: "fixed",
+            bottom: 30,
             left: "50%",
             transform: "translateX(-50%)",
             display: "flex",
-            gap: 2,
-            background: "rgba(0,0,0,0.8)",
-            borderRadius: 3,
-            p: 1
+            gap: 3,
+            background: "rgba(255,255,255,0.95)",
+            borderRadius: 4,
+            p: 2,
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255,255,255,0.2)",
+            zIndex: 1000
           }}
         >
           <IconButton 
             onClick={toggleAudio} 
             sx={{ 
-              color: isAudioEnabled ? "white" : "red",
-              background: isAudioEnabled ? "rgba(255,255,255,0.2)" : "rgba(255,0,0,0.3)",
+              width: 56,
+              height: 56,
+              color: isAudioEnabled ? "#4A90E2" : "#E74C3C",
+              background: isAudioEnabled ? "rgba(74, 144, 226, 0.1)" : "rgba(231, 76, 60, 0.1)",
+              border: `2px solid ${isAudioEnabled ? "#4A90E2" : "#E74C3C"}`,
               '&:hover': {
-                background: isAudioEnabled ? "rgba(255,255,255,0.3)" : "rgba(255,0,0,0.4)"
-              }
+                background: isAudioEnabled ? "rgba(74, 144, 226, 0.2)" : "rgba(231, 76, 60, 0.2)",
+                transform: "scale(1.05)"
+              },
+              transition: "all 0.2s ease-in-out"
             }}
           >
-            {isAudioEnabled ? <MicIcon /> : <MicOffIcon />}
+            {isAudioEnabled ? <MicIcon sx={{ fontSize: 24 }} /> : <MicOffIcon sx={{ fontSize: 24 }} />}
           </IconButton>
           
           <IconButton 
             onClick={toggleVideo} 
             sx={{ 
-              color: isVideoEnabled ? "white" : "red",
-              background: isVideoEnabled ? "rgba(255,255,255,0.2)" : "rgba(255,0,0,0.3)",
+              width: 56,
+              height: 56,
+              color: isVideoEnabled ? "#4A90E2" : "#E74C3C",
+              background: isVideoEnabled ? "rgba(74, 144, 226, 0.1)" : "rgba(231, 76, 60, 0.1)",
+              border: `2px solid ${isVideoEnabled ? "#4A90E2" : "#E74C3C"}`,
               '&:hover': {
-                background: isVideoEnabled ? "rgba(255,255,255,0.3)" : "rgba(255,0,0,0.4)"
-              }
+                background: isVideoEnabled ? "rgba(74, 144, 226, 0.2)" : "rgba(231, 76, 60, 0.2)",
+                transform: "scale(1.05)"
+              },
+              transition: "all 0.2s ease-in-out"
             }}
           >
-            {isVideoEnabled ? <VideocamIcon /> : <VideocamOffIcon />}
+            {isVideoEnabled ? <VideocamIcon sx={{ fontSize: 24 }} /> : <VideocamOffIcon sx={{ fontSize: 24 }} />}
           </IconButton>
           
           <IconButton 
             onClick={handleEndCall} 
             sx={{ 
+              width: 56,
+              height: 56,
               color: "white",
-              background: "rgba(255,0,0,0.8)",
+              background: "#E74C3C",
+              border: "2px solid #E74C3C",
               '&:hover': {
-                background: "rgba(255,0,0,0.9)"
-              }
+                background: "#C0392B",
+                borderColor: "#C0392B",
+                transform: "scale(1.05)"
+              },
+              transition: "all 0.2s ease-in-out"
             }}
           >
-            <CallEndIcon />
+            <CallEndIcon sx={{ fontSize: 24 }} />
           </IconButton>
         </Box>
       </Box>

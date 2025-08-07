@@ -386,3 +386,24 @@ export const endVideoSession = async (appointmentId) => {
     }
   });
 };
+
+// ================= Payment API =================
+
+/**
+ * Initiate a payment session
+ * @param {Object} paymentData - Payment data
+ * @param {string} paymentData.customerId - Customer ID
+ * @param {string} paymentData.customerPhone - Customer phone number
+ * @param {string} paymentData.customerEmail - Customer email
+ * @param {number} paymentData.amount - Payment amount
+ * @returns {Promise<Object>} Payment session response with paymentSessionId
+ */
+export const initiatePayment = async (paymentData) => {
+  const url = `${baseURL}/payments/initiate`;
+  const res = await axios.post(url, paymentData, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  return res.data;
+};

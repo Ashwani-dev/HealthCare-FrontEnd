@@ -3,9 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import AppointmentsPanel from "../common/AppointmentsPanel";
 import { fetchPatientAppointments, fetchPatientProfile, cancelAppointment } from "../../api/api";
 import { useNavigate } from "react-router-dom";
-import VideoCallWrapper from "../common/VideoCallWrapper";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
+
 
 // Refined dashboard header with calming colors and better spacing
 const DashboardHeader = ({ patientName, appointments }) => {
@@ -51,7 +49,6 @@ const PatientDashboard = () => {
   const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [videoCallAppointment, setVideoCallAppointment] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -194,7 +191,10 @@ const PatientDashboard = () => {
             <AppointmentsPanel
               appointments={appointments}
               onAction={handleAppointmentAction}
-              onJoinCall={appt => setVideoCallAppointment(appt)}
+              onJoinCall={appt => {
+                // Navigate to the video preview page
+                navigate(`/video-preview/${appt.appointmentId}/PATIENT`);
+              }}
               searchField="doctorName"
               searchPlaceholder="Search by doctor name..."
               // Pagination props
@@ -215,19 +215,7 @@ const PatientDashboard = () => {
             />
           </div>
           
-          {/* Video Call Modal */}
-          <Dialog open={!!videoCallAppointment} onClose={() => setVideoCallAppointment(null)} fullScreen>
-            <DialogContent sx={{ p: 0 }}>
-              {videoCallAppointment && (
-                <VideoCallWrapper
-                  appointmentId={videoCallAppointment.appointmentId}
-                  userType="PATIENT"
-                  userId={user?.userId}
-                  onEnd={() => setVideoCallAppointment(null)}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
+
         </>
       )}
     </div>
