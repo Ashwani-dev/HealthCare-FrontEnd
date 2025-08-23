@@ -63,17 +63,22 @@ export const loginUser = async (email, password, type) => {
 // ================= Appointment API =================
 
 /**
- * Book a new appointment
- * @param {number|string} doctorId - ID of the doctor
- * @param {number|string} patientId - ID of the patient
- * @param {string} date - Appointment date (YYYY-MM-DD format)
- * @param {string} startTime - Appointment start time (HH:MM format)
- * @param {string} reason - Reason for the appointment
- * @returns {Promise<Object>} Created appointment data
+ * Create an appointment hold
+ * @param {Object} holdData - Appointment hold data
+ * @param {number|string} holdData.patientId - Patient ID
+ * @param {number|string} holdData.doctorId - Doctor ID
+ * @param {string} holdData.date - Appointment date (YYYY-MM-DD format)
+ * @param {string} holdData.startTime - Appointment start time (HH:MM format)
+ * @param {string} holdData.reason - Reason for the appointment
+ * @returns {Promise<string>} Hold ID with prefix "hold_"
  */
-export const bookAppointment = async (doctorId, patientId, date, startTime, reason) => {
-  const url = `${baseURL}/appointments/book`;
-  const res = await axios.post(url, { doctorId, patientId, date, startTime, reason });
+export const createAppointmentHold = async (holdData) => {
+  const url = `${baseURL}/appointments/hold`;
+  const res = await axios.post(url, holdData, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
   return res.data;
 };
 
@@ -390,20 +395,32 @@ export const endVideoSession = async (appointmentId) => {
 // ================= Payment API =================
 
 /**
- * Initiate a payment session
- * @param {Object} paymentData - Payment data
+ * Initiate payment with appointment hold ID
+ * @param {Object} paymentData - Payment data with hold ID
+ * @param {string} paymentData.appointmentHoldReference - Appointment hold reference from createAppointmentHold
  * @param {string} paymentData.customerId - Customer ID
  * @param {string} paymentData.customerPhone - Customer phone number
  * @param {string} paymentData.customerEmail - Customer email
  * @param {number} paymentData.amount - Payment amount
  * @returns {Promise<Object>} Payment session response with paymentSessionId
  */
-export const initiatePayment = async (paymentData) => {
+export const initiatePaymentWithHold = async (paymentData) => {
   const url = `${baseURL}/payments/initiate`;
   const res = await axios.post(url, paymentData, {
     headers: {
       'Content-Type': 'application/json'
     }
   });
+  return res.data;
+};
+
+/**
+ * Get payment status for an order
+ * @param {string} orderId - Order ID to check status for
+ * @returns {Promise<string>} Payment status (SUCCESS, PENDING, FAILED, etc.)
+ */
+export const getPaymentStatus = async (orderId) => {
+  const url = `${baseURL}/payments/status/${orderId}`;
+  const res = await axios.get(url);
   return res.data;
 };

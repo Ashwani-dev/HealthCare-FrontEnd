@@ -7,9 +7,7 @@ let cashfree = null;
 const initializeCashfree = async () => {
   if (!cashfree) {
     cashfree = await load({
-      mode: "sandbox", //or production
-      // Add additional configuration to prevent form-encoded requests
-      returnUrl: `${window.location.origin}/payment-success`,
+      mode: "sandbox", // or production
       // Configure to use JSON for all requests
       useJson: true
     });
