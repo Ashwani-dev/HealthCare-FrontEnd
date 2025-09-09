@@ -195,6 +195,18 @@ const Navbar = () => {
                         </svg>
                         My Dashboard
                       </Link>
+                      {user.role?.toLowerCase() === "patient" && (
+                        <Link
+                          to="/payments"
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-150"
+                          onClick={() => setAvatarOpen(false)}
+                        >
+                          <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 1.567-3 3.5S10.343 15 12 15s3-1.567 3-3.5S13.657 8 12 8zm0 9c-3.866 0-7-2.91-7-6.5S8.134 4 12 4s7 2.91 7 6.5S15.866 17 12 17z" />
+                          </svg>
+                          Payments
+                        </Link>
+                      )}
                       {user.role?.toLowerCase() === "doctor" && (
                         <Link
                           to="/availability"
@@ -374,6 +386,21 @@ const Navbar = () => {
                     </svg>
                     My Dashboard
                   </Link>
+                  {user.role?.toLowerCase() === "patient" && (
+                    <Link
+                      to="/payments"
+                      className={`flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 ${location.pathname === "/payments"
+                          ? "bg-white/20 text-white border-l-4 border-white"
+                          : "text-white hover:text-blue-100 hover:bg-white/10"
+                        }`}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 1.567-3 3.5S10.343 15 12 15s3-1.567 3-3.5S13.657 8 12 8zm0 9c-3.866 0-7-2.91-7-6.5S8.134 4 12 4s7 2.91 7 6.5S15.866 17 12 17z" />
+                      </svg>
+                      Payments
+                    </Link>
+                  )}
                   {user.role?.toLowerCase() === "doctor" && (
                     <Link
                       to="/availability"

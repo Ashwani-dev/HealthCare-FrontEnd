@@ -20,6 +20,7 @@ import PaymentSuccess from "./components/payment/PaymentSuccess";
 import PaymentFailure from "./components/payment/PaymentFailure";
 import PaymentPending from "./components/payment/PaymentPending";
 import PaymentStatus from "./components/payment/PaymentStatus";
+import PatientPaymentsPage from "./components/pages/PatientPaymentsPage";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -47,6 +48,15 @@ const DoctorAvailability = () => {
 };
 
 
+const ProfileProtectedPatientOnly = () => {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="text-center mt-10 text-lg text-blue-600">Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
+  if (user.role?.toLowerCase() !== "patient") return <Navigate to="/dashboard" />;
+  return <PatientPaymentsPage />;
+};
+
+
 
 const AppContent = () => {
   return (
@@ -69,6 +79,7 @@ const AppContent = () => {
         <Route path="/payment-failure" element={<PaymentFailure />} />
         <Route path="/payment-pending" element={<PaymentPending />} />
         <Route path="/payment-status" element={<PaymentStatus />} />
+        <Route path="/payments" element={<ProfileProtectedPatientOnly />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

@@ -7,6 +7,7 @@ import Typography from "@mui/material/Typography";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import { FaCalendarAlt, FaTrash, FaVideo, FaInfoCircle, FaEdit } from "react-icons/fa";
 import { differenceInMinutes, parseISO, addMinutes, subMinutes, format } from "date-fns";
+import { formatTimeToAMPM } from "../../utils/dateTime";
 
 const STATUS_STYLES = {
   SCHEDULED: { color: "success.main", bg: "success.light" },
@@ -17,16 +18,7 @@ const STATUS_STYLES = {
 
 const MAX_REASON_LENGTH = 60;
 
-// Helper function to convert 24-hour format to 12-hour AM/PM format
-const formatTimeToAMPM = (time24) => {
-  if (!time24) return "";
-  
-  const [hours, minutes] = time24.split(':');
-  const hour = parseInt(hours, 10);
-  const ampm = hour >= 12 ? 'PM' : 'AM';
-  const hour12 = hour % 12 || 12;
-  return `${hour12}:${minutes} ${ampm}`;
-};
+// using shared util formatTimeToAMPM
 
 // Utility: Check if now is within joinable window
 function isJoinable(appointmentDate, startTime) {
