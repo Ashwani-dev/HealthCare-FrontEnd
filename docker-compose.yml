@@ -1,0 +1,25 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: healthcare-frontend:latest
+    container_name: healthcare-frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      # Backend service name from backend docker-compose.yml
+      - BACKEND_HOST=${BACKEND_HOST:-healthcare-app}
+      - BACKEND_PORT=${BACKEND_PORT:-8080}
+    networks:
+      # Connect to the same network as the backend
+      - healthcare-network
+    restart: unless-stopped
+
+# Connect to the external healthcare-network from backend docker-compose
+networks:
+  healthcare-network:
+    external: true
+    name: healthcare_healthcare-network
+

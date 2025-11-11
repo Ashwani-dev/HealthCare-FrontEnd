@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const baseURL = "http://localhost:8080/api";
+// Get API base URL from environment variable, fallback to relative path for nginx proxy
+const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "/api";
 
 // Add a request interceptor to include token if present
 axios.interceptors.request.use(
