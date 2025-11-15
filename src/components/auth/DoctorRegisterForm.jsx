@@ -23,6 +23,20 @@ const DoctorRegisterForm = () => {
     if (err) setErr("");
   };
 
+  // Helper function to decode JWT token
+  const decodeJWT = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      return null;
+    }
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
@@ -30,18 +44,82 @@ const DoctorRegisterForm = () => {
     
     try {
       const res = await registerUser(form, "doctor");
-      if (res.success) {
-        login(res.user);
+      
+      // Handle different response structures
+      let token = null;
+      let userData = null;
+      
+      // Check if response is a string (JWT token)
+      if (typeof res === 'string' && res.startsWith('eyJ')) {
+        token = res;
+        // Decode JWT to extract user info
+        const decoded = decodeJWT(token);
+        if (decoded) {
+          userData = {
+            role: decoded.role || "DOCTOR",
+            userId: decoded.sub || decoded.userId || decoded.id,
+            token: token
+          };
+        }
+      } 
+      // Check if response is an object with token
+      else if (res && typeof res === 'object') {
+        token = res.token || res;
+        if (res.success || token || (res.userId && res.role)) {
+          userData = {
+            role: res.role || "DOCTOR",
+            userId: res.userId || res.id || res.user?.id,
+            token: token,
+            ...(res.user || {})
+          };
+        }
+      }
+      
+      // If we have token and user data, login and redirect
+      if (token && userData) {
+        login(userData);
         navigate("/dashboard");
-      } else {
-        setErr("Registration failed. Please try again.");
+      } 
+      // If we only have token but no decoded data, try to use it anyway
+      else if (token) {
+        const decoded = decodeJWT(token);
+        if (decoded) {
+          login({
+            role: decoded.role || "DOCTOR",
+            userId: decoded.sub || decoded.userId || decoded.id,
+            token: token
+          });
+          navigate("/dashboard");
+        } else {
+          // Token exists but couldn't decode - redirect to login
+          navigate("/login", { 
+            state: { message: "Registration successful! Please login with your credentials." } 
+          });
+        }
+      }
+      // Check for success message
+      else if (res && typeof res === 'object' && res.message && res.message.toLowerCase().includes("success")) {
+        navigate("/login", { 
+          state: { message: "Registration successful! Please login with your credentials." } 
+        });
+      } 
+      // Fallback
+      else {
+        setErr(res?.message || "Registration completed, but unable to auto-login. Please try logging in.");
       }
     } catch (error) {
-      console.error("Registration error:", error);
-      
       if (error.response) {
         const status = error.response.status;
         const data = error.response.data;
+        
+        // If status is 200/201, registration likely succeeded but response format is unexpected
+        if (status === 200 || status === 201) {
+          // Registration succeeded - redirect to login
+          navigate("/login", { 
+            state: { message: "Registration successful! Please login with your credentials." } 
+          });
+          return;
+        }
         
         switch (status) {
           case 400:
@@ -115,6 +193,21 @@ const DoctorRegisterForm = () => {
         required 
         disabled={loading}
       />
+      <select 
+        name="gender" 
+        className={`w-full p-3 mb-3 border rounded focus:border-blue-500 ${
+          loading ? 'border-gray-200 bg-gray-50' : 'border-gray-300'
+        }`} 
+        onChange={handleChange} 
+        required 
+        disabled={loading}
+        value={form.gender || ""}
+      >
+        <option value="" className="text-gray-400">Select Gender</option>
+        <option value="MALE">Male</option>
+        <option value="FEMALE">Female</option>
+        <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
+      </select>
       <input 
         name="contact_number" 
         placeholder="Contact Number" 
@@ -139,6 +232,20 @@ const DoctorRegisterForm = () => {
         name="medical_experience" 
         type="number" 
         placeholder="Medical Experience (years)" 
+        className={`w-full p-3 mb-3 border rounded focus:border-blue-500 ${
+          loading ? 'border-gray-200 bg-gray-50' : 'border-gray-300'
+        }`} 
+        onChange={handleChange} 
+        required 
+        disabled={loading}
+      />
+      <input 
+        name="license_number" 
+        type="text" 
+        placeholder="License Number"
+        pattern="^[A-Za-z0-9\-]+$"
+        minLength="5"
+        maxLength="50"
         className={`w-full p-3 mb-3 border rounded focus:border-blue-500 ${
           loading ? 'border-gray-200 bg-gray-50' : 'border-gray-300'
         }`} 

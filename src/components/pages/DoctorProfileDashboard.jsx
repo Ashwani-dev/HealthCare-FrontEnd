@@ -58,6 +58,10 @@ const DoctorProfileDashboard = () => {
           <input name="full_name" value={form.full_name || ""} onChange={handleChange} className="w-full border rounded px-3 py-2" />
         </div>
         <div>
+          <label className="font-semibold text-gray-700 block mb-1">Gender</label>
+          <input name="full_name" value={form.gender || ""} disabled className="w-full border rounded px-3 py-2 bg-gray-100" />
+        </div>
+        <div>
           <label className="font-semibold text-gray-700 block mb-1">Username</label>
           <input name="username" value={form.username || ""} disabled className="w-full border rounded px-3 py-2 bg-gray-100" />
         </div>
@@ -72,6 +76,10 @@ const DoctorProfileDashboard = () => {
         <div>
           <label className="font-semibold text-gray-700 block mb-1">Medical Experience (years)</label>
           <input name="medical_experience" value={form.medical_experience || ""} onChange={handleChange} className="w-full border rounded px-3 py-2" type="number" min="0" />
+        </div>
+        <div>
+          <label className="font-semibold text-gray-700 block mb-1">License Number</label>
+          <input name="medical_experience" value={form.license_number || ""} onChange={handleChange} className="w-full border rounded px-3 py-2" type="text" min="0" />
         </div>
         <div>
           <label className="font-semibold text-gray-700 block mb-1">Specialization</label>

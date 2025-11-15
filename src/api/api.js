@@ -317,6 +317,28 @@ export const fetchDoctorProfile = async () => {
 };
 
 /**
+ * Fetch a doctor's profile by ID
+ * @param {number|string} doctorId - ID of the doctor
+ * @returns {Promise<Object>} Doctor profile data
+ */
+export const fetchDoctorProfileById = async (doctorId) => {
+  // Try the standard REST endpoint first: /api/doctor/{id}
+  // If backend uses /api/doctor/profile/{id} or /api/doctor/profile?id={id}, adjust accordingly
+  const url = `${baseURL}/doctor/${doctorId}`;
+  try {
+    const res = await axios.get(url);
+    return res.data;
+  } catch (error) {
+    // Fallback: try alternative endpoint patterns if the first one fails
+    // Uncomment and adjust if your backend uses a different pattern:
+    // const altUrl = `${baseURL}/doctor/profile/${doctorId}`;
+    // const res = await axios.get(altUrl);
+    // return res.data;
+    throw error;
+  }
+};
+
+/**
  * Update current patient's profile information
  * @param {Object} data - Updated profile data
  * @returns {Promise<Object>} Updated patient profile

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchDoctorsSearch, fetchDoctorsBySpecialization } from "../../api/api";
+import { fetchDoctorsSearch, fetchDoctorsBySpecialization, fetchDoctorProfileById } from "../../api/api";
 import BookAppointment from "../patient/BookAppointment";
 import { useAuth } from "../../context/AuthContext";
 import { FaSearch } from "react-icons/fa";
@@ -32,6 +32,10 @@ const FindTherapistPage = () => {
     approach: [],
   });
   const [modalDoctor, setModalDoctor] = useState(null);
+  const [profileDoctor, setProfileDoctor] = useState(null);
+  const [profileData, setProfileData] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileExpanded, setProfileExpanded] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const therapistsPerPage = 6;
@@ -100,7 +104,17 @@ const FindTherapistPage = () => {
     approach: false,
   });
   const [seeMore, setSeeMore] = useState({ specialization: false, approach: false });
-  const clearFilters = () => setFilters({ specialization: [], gender: "", language: [], approach: [] });
+  const clearFilters = () => {
+    const emptyFilters = { specialization: [], gender: "", language: [], approach: [] };
+    setFilters(emptyFilters);
+    setPendingFilters(emptyFilters);
+    // Refetch all doctors when clearing filters (use current search term or empty string)
+    setLoading(true);
+    fetchDoctorsSearch(search || "").then((data) => {
+      setDoctors(data);
+      setLoading(false);
+    });
+  };
 
   // Update pending filters on sidebar change
   const handlePendingFilterChange = (type, value) => {
@@ -135,11 +149,35 @@ const FindTherapistPage = () => {
   const toggleSection = (section) => setExpandedSections(s => ({ ...s, [section]: !s[section] }));
   const toggleSeeMore = (section) => setSeeMore(s => ({ ...s, [section]: !s[section] }));
 
+  // Handle view profile
+  const handleViewProfile = async (doctor) => {
+    setProfileDoctor(doctor);
+    setProfileExpanded(false);
+    setProfileLoading(true);
+    setProfileData(null);
+    try {
+      const data = await fetchDoctorProfileById(doctor.id);
+      setProfileData(data);
+    } catch (error) {
+      console.error("Failed to fetch doctor profile:", error);
+      // Fallback to basic doctor data if API fails
+      setProfileData(doctor);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
   // Filter counts
   const getCount = (type, value) => {
     return doctors.filter(doc => {
-      if (type === "specialization") return doc.specializations ? doc.specializations.includes(value) : doc.specialization === value;
-      if (type === "gender") return doc.gender === value;
+      if (type === "specialization") {
+        // Check both specialization and specializations array
+        return doc.specialization === value || (doc.specializations && doc.specializations.includes(value));
+      }
+      if (type === "gender") {
+        // Handle case-insensitive matching for gender (backend returns MALE/FEMALE, filter uses Male/Female)
+        return doc.gender && doc.gender.toUpperCase() === value.toUpperCase();
+      }
       if (type === "language") return doc.languages && doc.languages.includes(value);
       if (type === "approach") return doc.approaches && doc.approaches.includes(value);
       return false;
@@ -389,12 +427,12 @@ const FindTherapistPage = () => {
                       <div className="text-xs text-green-700 mb-2">Next available: {doc.nextAvailable}</div>
                     )}
                     <div className="flex gap-2 mt-auto">
-                      <a
-                        href={`/therapist/${doc.id}`}
+                      <button
                         className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition"
+                        onClick={() => handleViewProfile(doc)}
                       >
                         View Profile
-                      </a>
+                      </button>
                       <button
                         className="border border-blue-500 text-blue-700 px-4 py-1 rounded hover:bg-blue-100 transition"
                         onClick={() => setModalDoctor(doc)}
@@ -522,6 +560,175 @@ const FindTherapistPage = () => {
               <div className="flex gap-2 mt-4">
                 <button className="bg-blue-600 text-white px-4 py-1 rounded" onClick={() => { applyFilters(); setShowFilters(false); }}>Apply Filters</button>
                 <button className="bg-gray-300 text-gray-700 px-4 py-1 rounded" onClick={clearFilters}>Clear Filters</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Doctor Profile Modal */}
+        {profileDoctor && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4" onClick={() => setProfileDoctor(null)}>
+            <div
+              className={`bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-2 relative animate-fadeIn transition-all duration-300 ${profileExpanded ? 'max-h-[90vh]' : 'max-h-[70vh]'
+                } overflow-hidden flex flex-col`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl z-10"
+                onClick={() => {
+                  setProfileDoctor(null);
+                  setProfileExpanded(false);
+                  setProfileData(null);
+                }}
+                title="Close"
+              >
+                &times;
+              </button>
+
+              {/* Profile Content */}
+              <div className="overflow-y-auto flex-1">
+                {profileLoading ? (
+                  <div className="p-8 text-center text-gray-500">Loading profile...</div>
+                ) : profileData ? (
+                  <div className="p-6">
+                    {/* Header Section */}
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-6">
+                      {/* Avatar */}
+                      <div className="w-24 h-24 rounded-full bg-blue-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <span className="text-4xl text-blue-700 font-bold">
+                          {profileData.full_name?.charAt(0) || profileDoctor.full_name?.charAt(0) || "D"}
+                        </span>
+                      </div>
+
+                      {/* Basic Info */}
+                      <div className="flex-1 text-center md:text-left">
+                        <div className="flex items-center mb-1">
+                            <h2 className="text-3xl font-extrabold text-gray-900">
+                                {profileData.full_name || profileDoctor.full_name || "Doctor"}
+                            </h2>
+                            {(profileData.gender === 'MALE' || profileData.gender === 'FEMALE') && (
+                                <div className="flex items-center ml-4">
+                                    <span className="text-2xl text-gray-400 font-light mr-3">•</span> 
+                                    <p className="text-xl font-medium text-gray-600">
+                                        {profileData.gender}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                        <p className="text-lg text-blue-600 mb-2">
+                          {profileData.specialization || profileDoctor.specialization || "Therapist"}
+                        </p>
+                        {profileData.medical_experience !== undefined && (
+                          <p className="text-sm text-gray-600">
+                            {profileData.medical_experience} years of experience
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Expandable Details Section */}
+                    <div className="border-t border-gray-200 pt-4">
+                      <button
+                        className="w-full flex items-center justify-between text-left mb-4 hover:bg-gray-50 p-2 rounded transition-colors"
+                        onClick={() => setProfileExpanded(!profileExpanded)}
+                      >
+                        <span className="font-semibold text-gray-900">
+                          {profileExpanded ? "Hide Details" : "View Full Profile"}
+                        </span>
+                        {profileExpanded ? (
+                          <ChevronUpIcon className="w-5 h-5 text-gray-600" />
+                        ) : (
+                          <ChevronDownIcon className="w-5 h-5 text-gray-600" />
+                        )}
+                      </button>
+
+                      {/* Expanded Content */}
+                      {profileExpanded && (
+                        <div className="space-y-4 animate-fadeIn">
+                          {/* Contact Information */}
+                          {(profileData.email || profileData.contact_number) && (
+                            <div>
+                              <h3 className="font-semibold text-gray-900 mb-2">Contact Information</h3>
+                              <div className="space-y-1 text-sm text-gray-700">
+                                {profileData.email && (
+                                  <p><span className="font-medium">Email:</span> {profileData.email}</p>
+                                )}
+                                {profileData.contact_number && (
+                                  <p><span className="font-medium">Phone:</span> {profileData.contact_number}</p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Specialization Details */}
+                          {(profileData.specialization || profileData.specializations) && (
+                            <div>
+                              <h3 className="font-semibold text-gray-900 mb-2">Specializations</h3>
+                              <p className="text-sm text-gray-700">
+                                {profileData.specializations
+                                  ? profileData.specializations.join(", ")
+                                  : profileData.specialization || profileDoctor.specialization}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Experience */}
+                          {profileData.medical_experience !== undefined && (
+                            <div>
+                              <h3 className="font-semibold text-gray-900 mb-2">Experience</h3>
+                              <p className="text-sm text-gray-700">
+                                {profileData.medical_experience} years of medical experience
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Bio/Description */}
+                          {(profileData.bio || profileData.description || profileDoctor.bio) && (
+                            <div>
+                              <h3 className="font-semibold text-gray-900 mb-2">About</h3>
+                              <p className="text-sm text-gray-700 leading-relaxed">
+                                {profileData.bio || profileData.description || profileDoctor.bio || "Compassionate, experienced therapist dedicated to helping you thrive."}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Additional Info */}
+                          {profileData.username && (
+                            <div>
+                              <h3 className="font-semibold text-gray-900 mb-2">Username</h3>
+                              <p className="text-sm text-gray-700">{profileData.username}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-gray-500">Failed to load profile</div>
+                )}
+              </div>
+
+              {/* Footer Actions */}
+              <div className="border-t border-gray-200 p-4 flex gap-3">
+                <button
+                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition font-semibold"
+                  onClick={() => {
+                    setModalDoctor(profileDoctor);
+                    setProfileDoctor(null);
+                  }}
+                >
+                  Book Session
+                </button>
+                <button
+                  className="flex-1 border border-blue-500 text-blue-700 px-4 py-2 rounded hover:bg-blue-50 transition font-semibold"
+                  onClick={() => {
+                    setProfileDoctor(null);
+                    setProfileExpanded(false);
+                    setProfileData(null);
+                  }}
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
