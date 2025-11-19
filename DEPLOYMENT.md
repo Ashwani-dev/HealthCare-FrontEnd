@@ -38,16 +38,21 @@ cp .env.example .env
 1. Go to [vercel.com](https://vercel.com) and sign in
 2. Click "Add New Project"
 3. Import your Git repository
-4. Configure the project:
-   - **Framework Preset**: Vite
-   - **Root Directory**: `frontend` (if your repo has frontend folder)
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-   - **Install Command**: `npm install`
+4. **⚠️ CRITICAL STEP**: Configure the project settings:
+   - Click on **"Configure Project"** or **"Edit"** button
+   - **Root Directory**: Set to `frontend` ⚠️ **This is the most important setting!**
+     - Click the "Edit" link next to Root Directory
+     - Type `frontend` and save
+   - **Framework Preset**: Vite (or "Other" - Vercel will auto-detect)
+   - **Build Command**: `npm run build` (auto-filled, runs from frontend directory)
+   - **Output Directory**: `dist` (auto-filled, relative to frontend directory)
+   - **Install Command**: `npm install` (auto-filled)
+
+   **Why Root Directory matters**: Since your `package.json` and `vite.config.js` are in the `frontend` folder, Vercel needs to know to build from that directory. Without this setting, Vercel will try to build from the repo root and fail.
 
 5. Add Environment Variables:
    - Go to "Environment Variables" section
-   - Add `VITE_BACKEND_BASE_URL` with your backend URL
+   - Add `VITE_BACKEND_BASE_URL` with your backend URL: `https://health-care-7oam.onrender.com/api`
    - Add any other required environment variables
 
 6. Click "Deploy"
