@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// Get API base URL from environment variable, fallback to relative path for nginx proxy
-const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "/api";
+// Get API base URL from environment variable, fallback to deployed backend or relative path
+const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "https://health-care-7oam.onrender.com/api";
 
 // Add a request interceptor to include token if present
 axios.interceptors.request.use(

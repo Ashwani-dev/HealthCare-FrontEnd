@@ -244,14 +244,28 @@ npm run build
 The build output will be in the `dist/` directory, ready for deployment to any static hosting service.
 
 ### Environment Variables
-Create a `.env` file in the frontend directory:
+Create a `.env` file in the frontend directory (use `.env.example` as a template):
 ```env
-VITE_API_BASE_URL=http://localhost:8080/api
+VITE_BACKEND_BASE_URL=https://health-care-7oam.onrender.com/api
 VITE_TWILIO_ACCOUNT_SID=your_twilio_account_sid
 VITE_TWILIO_AUTH_TOKEN=your_twilio_auth_token
 VITE_CASHFREE_APP_ID=your_cashfree_app_id
-VITE_CASHFREE_ENVIRONMENT=TEST
+VITE_CASHFREE_ENVIRONMENT=PRODUCTION
 ```
+
+**Note:** All environment variables must be prefixed with `VITE_` to be accessible in the frontend code.
+
+### Deploy to Vercel
+
+This project is configured for easy deployment on Vercel. See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+
+**Quick Steps:**
+1. Push your code to a Git repository (GitHub, GitLab, or Bitbucket)
+2. Import the project on [Vercel](https://vercel.com)
+3. Set the environment variable `VITE_BACKEND_BASE_URL` in Vercel dashboard
+4. Deploy!
+
+The `vercel.json` file is already configured for optimal deployment.
 
 ## 📦 Dependencies
 
