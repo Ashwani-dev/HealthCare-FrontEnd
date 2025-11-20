@@ -68,6 +68,11 @@ const HomePage = () => {
     }
   };
 
+  const handleLearnMore = (e) => {
+    e.preventDefault();
+    navigate("/about");
+  };
+
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       {/* Hero Section */}
@@ -84,7 +89,12 @@ const HomePage = () => {
             >
               Find a Therapist
             </button>
-            <a href="/about" className="inline-block bg-white hover:bg-blue-50 text-blue-700 font-semibold px-8 py-4 rounded-xl shadow text-lg border border-blue-200 transition-all">Learn How It Works</a>
+            <button
+              onClick={handleLearnMore}
+              className="inline-block bg-white hover:bg-blue-50 text-blue-700 font-semibold px-8 py-4 rounded-xl shadow text-lg border border-blue-200 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+            >
+              Learn How It Works
+            </button>
           </div>
         </div>
       </section>

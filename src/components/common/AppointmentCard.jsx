@@ -4,6 +4,7 @@ import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import Tooltip from "@mui/material/Tooltip";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import { FaCalendarAlt, FaTrash, FaVideo, FaInfoCircle, FaEdit } from "react-icons/fa";
 import { differenceInMinutes, parseISO, addMinutes, subMinutes, format } from "date-fns";
@@ -34,12 +35,41 @@ function isJoinable(appointmentDate, startTime) {
   }
 }
 
-const AppointmentCard = ({ appointment, onAction, onJoinCall }) => {
+const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, userRole }) => {
   const [expanded, setExpanded] = useState(false);
   const { doctorName, appointmentDate, startTime, endTime, status, description } = appointment;
   const statusStyle = STATUS_STYLES[status] || { color: "grey.700", bg: "grey.100" };
   const showExpand = description && description.length > MAX_REASON_LENGTH;
   const joinable = isJoinable(appointmentDate, startTime);
+  const appointmentDateTime = parseISO(`${appointmentDate}T${startTime}`);
+  const minutesUntilStart = differenceInMinutes(appointmentDateTime, new Date());
+  const isWithin24Hours = Number.isFinite(minutesUntilStart) ? minutesUntilStart < 24 * 60 : false;
+  const normalizedRole = userRole?.toLowerCase?.() || "";
+  const appointmentPatientId =
+    appointment.patientId ??
+    appointment.patient_id ??
+    appointment.patient?.id ??
+    appointment.patientID;
+  const belongsToCurrentUser =
+    normalizedRole !== "patient"
+      ? false
+      : appointmentPatientId !== undefined && appointmentPatientId !== null
+      ? String(appointmentPatientId) === String(currentUserId)
+      : true;
+  const canCancel =
+    status === "SCHEDULED" &&
+    normalizedRole === "patient" &&
+    belongsToCurrentUser &&
+    !isWithin24Hours;
+
+  const getCancelTooltip = () => {
+    if (canCancel) return "Cancel this appointment";
+    if (status !== "SCHEDULED") return "Only scheduled appointments can be cancelled.";
+    if (normalizedRole !== "patient") return "Only patients can cancel appointments.";
+    if (!belongsToCurrentUser) return "You can only cancel your own appointments.";
+    if (isWithin24Hours) return "Cancellations must be made at least 24 hours in advance.";
+    return "Cancellation is not available for this appointment.";
+  };
 
   return (
     <Card sx={{ 
@@ -147,10 +177,13 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall }) => {
       <CardActions sx={{ 
         display: 'flex', 
         flexWrap: 'wrap', 
-        gap: 2, 
-        justifyContent: { xs: 'flex-start', md: 'flex-end' },
+        gap: 1.5, 
+        justifyContent: { xs: 'stretch', md: 'flex-end' },
         p: 3,
-        pt: 0
+        pt: 0,
+        '& > button': {
+          flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '0 0 auto' },
+        }
       }}>
         {/* Join Call - Primary Action */}
         <Button
@@ -222,31 +255,41 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall }) => {
         </Button>
         
         {/* Cancel - Warning Action */}
-        <Button
-          variant="outlined"
-          color="error"
-          size="medium"
-          startIcon={<FaTrash />}
-          disabled={status === "COMPLETED"}
-          onClick={() => onAction && onAction("cancel", appointment)}
-          sx={{
-            fontWeight: 500,
-            textTransform: 'none',
-            px: 3,
-            py: 1.5,
-            borderRadius: 2,
-            borderColor: status === "COMPLETED" ? 'grey.200' : 'grey.300',
-            color: status === "COMPLETED" ? 'grey.400' : 'grey.700',
-            opacity: status === "COMPLETED" ? 0.5 : 1,
-            cursor: status === "COMPLETED" ? "not-allowed" : "pointer",
-            '&:hover': status === "COMPLETED" ? {} : { 
-              borderColor: 'error.main', 
-              backgroundColor: 'error.50' 
-            }
-          }}
+        <Tooltip
+          title={getCancelTooltip()}
+          placement="top"
+          disableFocusListener={canCancel}
+          disableHoverListener={canCancel}
+          disableTouchListener={canCancel}
         >
-          Cancel
-        </Button>
+          <span>
+            <Button
+              variant="outlined"
+              color="error"
+              size="medium"
+              startIcon={<FaTrash />}
+              disabled={!canCancel}
+              onClick={() => onAction && onAction("cancel", appointment)}
+              sx={{
+                fontWeight: 500,
+                textTransform: 'none',
+                px: 3,
+                py: 1.5,
+                borderRadius: 2,
+                borderColor: !canCancel ? 'grey.200' : 'grey.300',
+                color: !canCancel ? 'grey.400' : 'grey.700',
+                opacity: !canCancel ? 0.5 : 1,
+                cursor: !canCancel ? "not-allowed" : "pointer",
+                '&:hover': !canCancel ? {} : { 
+                  borderColor: 'error.main', 
+                  backgroundColor: 'error.50' 
+                }
+              }}
+            >
+              Cancel
+            </Button>
+          </span>
+        </Tooltip>
       </CardActions>
     </Card>
   );

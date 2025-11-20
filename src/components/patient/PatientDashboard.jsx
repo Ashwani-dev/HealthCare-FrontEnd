@@ -195,6 +195,8 @@ const PatientDashboard = () => {
                 // Navigate to the video preview page
                 navigate(`/video-preview/${appt.appointmentId}/PATIENT`);
               }}
+              currentUserId={user?.userId}
+              userRole={user?.role}
               searchField="doctorName"
               searchPlaceholder="Search by doctor name..."
               // Pagination props

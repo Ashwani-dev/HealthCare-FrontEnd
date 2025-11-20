@@ -167,6 +167,8 @@ const AppointmentsPanel = ({
   onJoinCall, 
   searchField = "patientName", 
   searchPlaceholder = "Search by patient name...",
+  currentUserId = null,
+  userRole = "",
   // Pagination props
   isPaginated = false,
   currentPage = 0,
@@ -324,6 +326,8 @@ const AppointmentsPanel = ({
               appointment={appt} 
               onAction={onAction} 
               onJoinCall={onJoinCall} 
+              currentUserId={currentUserId}
+              userRole={userRole}
             />
           ))
         )}
