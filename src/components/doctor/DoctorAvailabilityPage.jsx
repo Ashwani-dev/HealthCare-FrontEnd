@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { setDoctorAvailability, fetchDoctorAvailability } from "../../api/api";
+import { setDoctorAvailability, fetchDoctorAvailability, deleteAvailabilitySlot } from "../../api/api"; 
 
 const DAYS = [
   "MONDAY",
@@ -18,7 +18,7 @@ const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
   return `${h}:${m}`;
 });
 
-// Helper function to convert 24-hour format to 12-hour AM/PM format
+// Helper: Convert 24h to 12h for Display
 const formatTimeToAMPM = (time24) => {
   if (!time24) return "";
   
@@ -27,6 +27,12 @@ const formatTimeToAMPM = (time24) => {
   const ampm = hour >= 12 ? 'PM' : 'AM';
   const hour12 = hour % 12 || 12;
   return `${hour12}:${minutes} ${ampm}`;
+};
+
+// Helper: Trim seconds from DB time (09:00:00 -> 09:00) to match Select Options
+const normalizeTime = (time) => {
+  if (!time) return "";
+  return time.length > 5 ? time.substring(0, 5) : time;
 };
 
 // Icons as SVG components
@@ -96,7 +102,8 @@ const DoctorAvailabilityPage = () => {
     }, {})
   );
   const [modalDay, setModalDay] = useState(null);
-  const [modalSlots, setModalSlots] = useState([]);
+  // CRITICAL: Must deep copy slots when opening modal to avoid state mutations
+  const [modalSlots, setModalSlots] = useState([]); 
   const [modalAvailable, setModalAvailable] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [copyDay, setCopyDay] = useState(null);
@@ -105,57 +112,79 @@ const DoctorAvailabilityPage = () => {
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
 
-  // Fetch existing availability data
-  useEffect(() => {
-    const loadAvailability = async () => {
-      if (!user?.userId) return;
-      
-      try {
-        setLoading(true);
-        const existingAvailability = await fetchDoctorAvailability(user.userId);
-        
-        // Transform the API data to match our component structure
-        const transformedAvailability = DAYS.reduce((acc, day) => {
-          acc[day] = { isAvailable: false, slots: [] };
-          return acc;
-        }, {});
-
-        // Process the fetched data
-        if (Array.isArray(existingAvailability)) {
-          existingAvailability.forEach(slot => {
-            const day = slot.dayOfWeek?.toUpperCase();
-            if (day && DAYS.includes(day)) {
-              transformedAvailability[day].isAvailable = true;
-              transformedAvailability[day].slots.push({
-                startTime: slot.startTime,
-                endTime: slot.endTime
-              });
-            }
-          });
-        }
-
-        setAvailability(transformedAvailability);
-      } catch (error) {
-        console.error("Failed to load availability:", error);
-        showToastMessage("Failed to load existing availability.", "error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadAvailability();
-  }, [user?.userId]);
-
   const showToastMessage = (message, type = "success") => {
     setMsg(message);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 4000);
   };
 
+  // Reusable function to fetch and transform data
+  const loadData = useCallback(async (isInitialLoad = false) => {
+    if (!user?.userId) return;
+
+    try {
+      if (isInitialLoad) setLoading(true);
+      
+      const existingAvailability = await fetchDoctorAvailability(user.userId);
+      
+      const transformedAvailability = DAYS.reduce((acc, day) => {
+        acc[day] = { isAvailable: false, slots: [] };
+        return acc;
+      }, {});
+
+      if (Array.isArray(existingAvailability)) {
+        existingAvailability.forEach(slot => {
+          const day = slot.dayOfWeek?.toUpperCase();
+          if (day && DAYS.includes(day)) {
+            transformedAvailability[day].isAvailable = true;
+            transformedAvailability[day].slots.push({
+              id: slot.id, // <--- CRITICAL: Store the DB ID
+              startTime: normalizeTime(slot.startTime),
+              endTime: normalizeTime(slot.endTime),
+              isSaved: true // MARK AS SAVED
+            });
+          }
+        });
+      }
+
+      setAvailability(transformedAvailability);
+    } catch (error) {
+      console.error("Failed to load availability:", error);
+      showToastMessage("Failed to load existing availability.", "error");
+    } finally {
+      if (isInitialLoad) setLoading(false);
+    }
+  }, [user?.userId]);
+
+  // Initial Data Load
+  useEffect(() => {
+    loadData(true);
+  }, [loadData]);
+
+
+  // --- NEW: API Handler for Deletion ---
+  const handleDeleteSlot = async (slotId) => {
+    if (!slotId || !user?.userId) return false;
+    
+    try {
+        await deleteAvailabilitySlot(user.userId, slotId);
+        showToastMessage("Slot deleted from the database.", "success");
+        return true;
+        
+    } catch (error) {
+        console.error("Error deleting slot:", error);
+        const errorMessage = error.response?.data?.message || error.message; 
+        showToastMessage(`Failed to delete slot: ${errorMessage}`, "error");
+        return false;
+    }
+  };
+
+
   const openModal = (day) => {
     setModalDay(day);
     setModalAvailable(availability[day].isAvailable);
-    setModalSlots(availability[day].slots.length ? [...availability[day].slots] : []);
+    // Deep copy slots to avoid state mutations
+    setModalSlots(availability[day].slots.length ? availability[day].slots.map(s => ({...s})) : []); 
     setShowModal(true);
   };
 
@@ -171,24 +200,67 @@ const DoctorAvailabilityPage = () => {
   };
 
   const addSlot = () => {
+    // New slots do NOT have the id/isSaved flag
     setModalSlots((prev) => [...prev, { startTime: "", endTime: "" }]);
   };
 
   const editSlot = (idx, field, value) => {
     setModalSlots((prev) =>
-      prev.map((slot, i) => (i === idx ? { ...slot, [field]: value } : slot))
+      // Ensure we preserve the existing properties (like id and isSaved)
+      prev.map((slot, i) => (i === idx ? { ...slot, [field]: value } : slot)) 
     );
   };
 
-  const deleteSlot = (idx) => {
-    setModalSlots((prev) => prev.filter((_, i) => i !== idx));
+  // --- UPDATED: Modal Slot Deletion Logic (Handles API Call) ---
+  const deleteSlot = async (idx) => {
+    const slotToDelete = modalSlots[idx];
+    const slotId = slotToDelete.id;
+    const isSavedSlot = slotId && slotToDelete.isSaved;
+
+    let shouldProceed = true;
+
+    if (isSavedSlot) {
+        // Confirm deletion for a slot already in the database
+        shouldProceed = window.confirm(
+            "This slot is currently saved in the database. Are you sure you want to permanently delete it? (This action cannot be undone)"
+        );
+    }
+
+    if (shouldProceed) {
+        if (isSavedSlot) {
+            // 1. Call API to delete from DB
+            const success = await handleDeleteSlot(slotId);
+            if (!success) {
+                // API failed, stop deletion process
+                return; 
+            }
+            // 2. Update main availability state immediately after successful API delete
+            setAvailability(prev => ({
+                ...prev,
+                [modalDay]: {
+                    ...prev[modalDay],
+                    slots: prev[modalDay].slots.filter(s => s.id !== slotId)
+                }
+            }));
+        }
+
+        // 3. Remove slot from the MODAL state (UI update)
+        setModalSlots((prev) => prev.filter((_, i) => i !== idx));
+    }
   };
 
   const copyToAllDays = (day) => {
     setAvailability((prev) => {
       const { isAvailable, slots } = prev[day];
       return DAYS.reduce((acc, d) => {
-        acc[d] = { isAvailable, slots: isAvailable ? [...slots] : [] };
+        // When copying, ensure id is removed and isSaved is false (making them new)
+        const newSlots = slots.map(slot => ({
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            isSaved: false 
+        }));
+
+        acc[d] = { isAvailable, slots: isAvailable ? newSlots : [] };
         return acc;
       }, {});
     });
@@ -199,10 +271,12 @@ const DoctorAvailabilityPage = () => {
   const handleSaveAll = async () => {
     setSaving(true);
     const payload = [];
+    
     DAYS.forEach((day) => {
       if (availability[day].isAvailable) {
         availability[day].slots.forEach((slot) => {
-          if (slot.startTime && slot.endTime) {
+          // Only add to payload if it has times AND is NOT already saved in DB
+          if (slot.startTime && slot.endTime && !slot.isSaved) {
             payload.push({
               dayOfWeek: day,
               startTime: slot.startTime,
@@ -213,10 +287,23 @@ const DoctorAvailabilityPage = () => {
         });
       }
     });
+
+    if (payload.length === 0) {
+        showToastMessage("No new changes to save.", "success");
+        setSaving(false);
+        return;
+    }
+
     try {
       await setDoctorAvailability(user.userId, payload);
       showToastMessage("Availability saved successfully!", "success");
+      
+      // REFRESH DATA: Fetch from DB so that the slots we just saved 
+      // are now marked as { id: <db_id>, isSaved: true } in the UI state.
+      await loadData(false);
+
     } catch (e) {
+      console.error(e);
       showToastMessage("Failed to save availability. Please try again.", "error");
     } finally {
       setSaving(false);
@@ -251,10 +338,10 @@ const DoctorAvailabilityPage = () => {
       {/* Toast Notification */}
       {showToast && (
         <div className={`fixed top-4 left-4 right-4 lg:right-auto lg:left-auto lg:right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
-          msg.includes("Failed") ? "bg-red-500 text-white" : "bg-green-500 text-white"
+          msg.includes("Failed") || msg.includes("Error") ? "bg-red-500 text-white" : "bg-green-500 text-white"
         }`}>
           <div className="flex items-center">
-            {msg.includes("Failed") ? (
+            {msg.includes("Failed") || msg.includes("Error") ? (
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -481,7 +568,8 @@ const DoctorAvailabilityPage = () => {
                       </div>
                       <button
                         className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 self-start lg:self-auto"
-                        onClick={() => deleteSlot(idx)}
+                        // Call the updated deleteSlot function
+                        onClick={() => deleteSlot(idx)} 
                         title="Delete slot"
                         type="button"
                       >
@@ -533,4 +621,4 @@ const DoctorAvailabilityPage = () => {
   );
 };
 
-export default DoctorAvailabilityPage; 
+export default DoctorAvailabilityPage;

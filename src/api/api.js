@@ -1,7 +1,8 @@
 import axios from "axios";
 
 // Get API base URL from environment variable, fallback to deployed backend or relative path
-const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "https://health-care-7oam.onrender.com/api";
+// const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "https://health-care-7oam.onrender.com/api";
+const baseURL = "http://localhost:8080/api";
 
 // Add a request interceptor to include token if present
 axios.interceptors.request.use(
@@ -265,6 +266,20 @@ export const setDoctorAvailability = async (doctorId, availabilityArray) => {
 export const fetchDoctorAvailability = async (doctorId) => {
   const url = `${baseURL}/availability/${doctorId}`;
   const res = await axios.get(url);
+  return res.data;
+};
+
+/**
+ * Delete a specific availability slot for a doctor
+ * @param {number|string} doctorId - ID of the doctor
+ *  @param {number|string} slotId - ID of the availability slot to delete
+ * @returns {Promise<Object>} Deletion response
+ * @throws {Error} If deletion fails
+ */
+export const deleteAvailabilitySlot = async (doctorId, slotId) => {
+  const url = `${baseURL}/availability/${doctorId}/${slotId}`;
+  // Use axios.delete matching the Controller @DeleteMapping
+  const res = await axios.delete(url); 
   return res.data;
 };
 

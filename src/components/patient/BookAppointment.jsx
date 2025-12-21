@@ -49,7 +49,25 @@ const BookAppointment = ({ doctor, patientId, onBooked, onCancel }) => {
       
       fetchDoctorAvailableSlots(doctor.id, dateStr)
         .then((slots) => {
-          setTimeSlots(slots);
+          const now = new Date();
+          const selectedDateOnly = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+          const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+          if (selectedDateOnly.getTime() === todayOnly.getTime()) {
+            // If selected date is today, show only future time slots
+            const currentTime = now.getHours().toString().padStart(2, '0') + ':' +
+              now.getMinutes().toString().padStart(2, '0');
+
+            const filteredSlots = slots.filter(slot => {
+              const slotTime = slot.startTime.slice(0, 5); // Get HH:MM format
+              return slotTime > currentTime;
+            });
+
+            setTimeSlots(filteredSlots);
+          }
+          else {
+            setTimeSlots(slots);
+          }
         })
         .catch((error) => {
           // Handle error silently or show user-friendly message
@@ -74,10 +92,8 @@ const BookAppointment = ({ doctor, patientId, onBooked, onCancel }) => {
           const interval = setInterval(async () => {
             try {
               pollCount++;
-              console.log(`Polling payment status (${pollCount}/${maxPolls}):`, orderId);
               
               const status = await getPaymentStatus(orderId);
-              console.log('Payment status:', status);
               
               if (status === 'PAID' || status === 'SUCCESS') {
                 clearInterval(interval);
@@ -145,7 +161,6 @@ const BookAppointment = ({ doctor, patientId, onBooked, onCancel }) => {
       };
       
       const holdId = await createAppointmentHold(holdData);
-      console.log('Appointment hold created:', holdId);
       
       // Step 2: Initiate Payment with Hold ID
       const patientProfile = await fetchPatientProfile();
@@ -170,7 +185,6 @@ const BookAppointment = ({ doctor, patientId, onBooked, onCancel }) => {
       
       // Step 3: Redirect to payment page
       const redirectTarget = "_self";
-      console.log('Opening payment page with hold ID:', { sessionId, holdId, redirectTarget });
 
       // Call Cashfree checkout
       await cashfreeCheckout({
@@ -179,7 +193,6 @@ const BookAppointment = ({ doctor, patientId, onBooked, onCancel }) => {
       });
       
     } catch (error) {
-      console.error('Pay now and book error:', error);
       setError('Failed to initiate payment and booking: ' + (error.response?.data?.message || error.message));
     } finally {
       setPaymentLoading(false);
@@ -288,4 +301,4 @@ const BookAppointment = ({ doctor, patientId, onBooked, onCancel }) => {
   );
 };
 
-export default BookAppointment; 
+export default BookAppointment;
