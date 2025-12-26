@@ -1,9 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import AppointmentCard from "./AppointmentCard";
 import MobileFilters from "./MobileFilters";
 
+// SVG Icons
+const SearchIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </svg>
+);
+
+const EmptyStateIcon = () => (
+  <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+  </svg>
+);
+
+const SortIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+  </svg>
+);
+
 const STATUS_OPTIONS = [
-  { label: "All", value: "ALL" },
+  { label: "All Status", value: "ALL" },
   { label: "Scheduled", value: "SCHEDULED" },
   { label: "Pending", value: "PENDING" },
   { label: "Completed", value: "COMPLETED" },
@@ -11,7 +30,7 @@ const STATUS_OPTIONS = [
 ];
 
 const DATE_FILTERS = [
-  { label: "All", value: "all" },
+  { label: "All Time", value: "all" },
   { label: "Today", value: "today" },
   { label: "Tomorrow", value: "tomorrow" },
   { label: "This Week", value: "week" },
@@ -33,6 +52,8 @@ function filterAppointments(appointments, status, dateFilter, search, searchFiel
   // Date filtering
   if (dateFilter && dateFilter !== "all") {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
     if (dateFilter === "today") {
       const todayStr = today.toISOString().slice(0, 10);
       filtered = filtered.filter(a => a.appointmentDate === todayStr);
@@ -101,17 +122,17 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalElements, page
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-gray-200">
       {/* Results info */}
-      <div className="text-sm text-gray-600 text-center sm:text-left">
-        Showing {startElement} to {endElement} of {totalElements} appointments
+      <div className="text-sm text-gray-600 font-medium text-center sm:text-left">
+        Showing <span className="text-gray-800">{startElement}</span> to <span className="text-gray-800">{endElement}</span> of <span className="text-gray-800">{totalElements}</span> appointments
       </div>
       
       {/* Pagination controls */}
-      <div className="flex items-center gap-1 sm:gap-2">
+      <div className="flex items-center gap-2">
         {/* Previous button */}
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 0}
-          className="px-2 sm:px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          className="px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow"
         >
           <span className="hidden sm:inline">Previous</span>
           <span className="sm:hidden">←</span>
@@ -125,7 +146,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalElements, page
             
             if (isEllipsis) {
               return (
-                <span key={`ellipsis-${index}`} className="px-2 sm:px-3 py-2 text-gray-500">
+                <span key={`ellipsis-${index}`} className="px-2 sm:px-3 py-2 text-gray-400 font-medium">
                   ...
                 </span>
               );
@@ -135,10 +156,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalElements, page
               <button
                 key={pageNum}
                 onClick={() => onPageChange(pageNum)}
-                className={`px-2 sm:px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                className={`min-w-[36px] sm:min-w-[40px] px-2 sm:px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                   isCurrentPage
-                    ? "bg-blue-600 text-white border border-blue-600"
-                    : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                    ? "bg-blue-600 text-white border border-blue-600 shadow-md hover:bg-blue-700"
+                    : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 shadow-sm hover:shadow"
                 }`}
               >
                 {pageNum + 1}
@@ -151,7 +172,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalElements, page
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages - 1}
-          className="px-2 sm:px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          className="px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow"
         >
           <span className="hidden sm:inline">Next</span>
           <span className="sm:hidden">→</span>
@@ -227,7 +248,7 @@ const AppointmentsPanel = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-8 h-[80vh] flex flex-col">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-8 min-h-[80vh] flex flex-col">
       {/* Mobile Filters */}
       <MobileFilters
         dateFilters={DATE_FILTERS}
@@ -242,17 +263,17 @@ const AppointmentsPanel = ({
         searchPlaceholder={searchPlaceholder}
       />
 
-      {/* Desktop Filters & Search */}
-      <div className="hidden lg:flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
-        {/* Date Filters */}
-        <div className="flex gap-3 flex-wrap">
+      {/* Desktop Filters & Controls */}
+      <div className="hidden lg:block mb-6">
+        {/* Top Row: Date Filters */}
+        <div className="flex flex-wrap gap-3 mb-4">
           {DATE_FILTERS.map(f => (
             <button
               key={f.value}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
+              className={`px-5 py-2.5 rounded-lg text-sm font-semibold border transition-all duration-200 ${
                 effectiveDateFilter === f.value 
-                  ? "bg-blue-600 text-white border-blue-600 shadow-sm" 
-                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                  ? "bg-blue-600 text-white border-blue-600 shadow-md hover:bg-blue-700" 
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm"
               }`}
               onClick={() => handleDateFilterChange(f.value)}
             >
@@ -261,63 +282,84 @@ const AppointmentsPanel = ({
           ))}
         </div>
         
-        {/* Status Filters */}
-        <div className="flex gap-3 flex-wrap">
-          {STATUS_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
-                effectiveStatus === opt.value 
-                  ? "bg-blue-100 text-blue-700 border-blue-300 shadow-sm" 
-                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
-              }`}
-              onClick={() => handleStatusChange(opt.value)}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-        
-        {/* Search - Only show if showSearch is true */}
-        {showSearch && (
-          <div className="flex-shrink-0">
-            <input
-              type="text"
-              placeholder={searchPlaceholder}
-              className="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 w-full lg:w-64"
-              value={effectiveSearch}
-              onChange={e => handleSearchChange(e.target.value)}
-            />
+        {/* Bottom Row: Status Filters, Sort, and Search */}
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+          {/* Status Filters */}
+          <div className="flex flex-wrap gap-2 flex-1">
+            {STATUS_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
+                  effectiveStatus === opt.value 
+                    ? "bg-blue-50 text-blue-700 border-blue-200 shadow-sm" 
+                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                }`}
+                onClick={() => handleStatusChange(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
-        )}
+          
+          {/* Right Side: Sort and Search */}
+          <div className="flex items-center gap-3">
+            {/* Sort Dropdown (only for paginated mode) */}
+            {isPaginated && onSortChange && (
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <SortIcon />
+                </div>
+                <select
+                  value={currentSort}
+                  onChange={(e) => onSortChange(e.target.value)}
+                  className="appearance-none pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer"
+                >
+                  {SORT_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            )}
+            
+            {/* Search Bar */}
+            {showSearch && (
+              <div className="relative w-80">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <SearchIcon />
+                </div>
+                <input
+                  type="text"
+                  placeholder={searchPlaceholder}
+                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm"
+                  value={effectiveSearch}
+                  onChange={e => handleSearchChange(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-
-      {/* Sort Options (only for paginated mode) */}
-      {isPaginated && onSortChange && (
-        <div className="mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <label className="text-sm font-medium text-gray-700">Sort by:</label>
-            <select
-              value={currentSort}
-              onChange={(e) => onSortChange(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 w-full sm:w-auto"
-            >
-              {SORT_OPTIONS.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      )}
       
       {/* Appointments List */}
-      <div className="space-y-4 lg:space-y-6 overflow-y-auto flex-1 pr-0 lg:pr-2">
+      <div className="space-y-4 lg:space-y-5 overflow-y-auto flex-1 pr-0 lg:pr-2">
         {filteredAppointments.length === 0 ? (
-          <div className="text-center text-gray-500 mt-8 lg:mt-12 px-4">
-            <div className="text-lg font-medium mb-2">No appointments found</div>
-            <div className="text-sm">Try adjusting your filters or search terms</div>
+          <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center px-4">
+            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+              <EmptyStateIcon className="text-gray-300" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">No Appointments Found</h3>
+            <p className="text-sm text-gray-500 max-w-md">
+              {effectiveSearch || effectiveStatus !== "ALL" || effectiveDateFilter !== "all"
+                ? "Try adjusting your filters or search terms to see more results."
+                : "You don't have any appointments yet. Book your first appointment to get started."}
+            </p>
           </div>
         ) : (
           filteredAppointments.map((appt, idx) => (
@@ -347,4 +389,4 @@ const AppointmentsPanel = ({
   );
 };
 
-export default AppointmentsPanel; 
+export default AppointmentsPanel;

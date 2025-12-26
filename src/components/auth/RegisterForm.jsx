@@ -1,45 +1,61 @@
 import React, { useState } from "react";
 import DoctorRegisterForm from "./DoctorRegisterForm";
 import PatientRegisterForm from "./PatientRegisterForm";
-import { useNavigate } from "react-router-dom";
-import "../../styles/AuthTypeBubbles.css";
 
 const RegisterForm = () => {
   const [type, setType] = useState("patient");
-  const navigate = useNavigate();
 
   return (
-    <div className="max-w-md mx-auto p-4 bg-white rounded shadow">
-      <h2 className="text-xl font-bold mb-4 text-center">Register as</h2>
-      <div className="flex justify-center gap-4 mb-4">
-        <button
-          type="button"
-          className={`bubble-btn ${type === "patient" ? "selected" : ""}`}
-          onClick={() => setType("patient")}
-        >
-          Patient
-        </button>
-        <button
-          type="button"
-          className={`bubble-btn ${type === "doctor" ? "selected" : ""}`}
-          onClick={() => setType("doctor")}
-        >
-          Doctor
-        </button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+      {/* Role Toggle Bar */}
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-center gap-3">
+            <span className="text-sm font-semibold text-gray-700">Register as:</span>
+            <div className="inline-flex rounded-lg border border-gray-300 p-1 bg-gray-50">
+              <button
+                type="button"
+                onClick={() => setType("patient")}
+                className={`px-6 py-2 rounded-md text-sm font-semibold transition-all duration-200 ${
+                  type === "patient"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                  Patient
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setType("doctor")}
+                className={`px-6 py-2 rounded-md text-sm font-semibold transition-all duration-200 ${
+                  type === "doctor"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
+                  </svg>
+                  Doctor
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-      {type === "patient" ? <PatientRegisterForm /> : <DoctorRegisterForm />}
-      <div className="flex items-center justify-center mt-6">
-        <span className="text-gray-700 mr-2">Already have account?</span>
-        <button
-          type="button"
-          className="text-blue-600 font-semibold hover:underline focus:outline-none"
-          onClick={() => navigate("/login")}
-        >
-          Log in
-        </button>
+
+      {/* Form Content with Fade Transition */}
+      <div className="transition-opacity duration-300">
+        {type === "patient" ? <PatientRegisterForm /> : <DoctorRegisterForm />}
       </div>
     </div>
   );
 };
 
-export default RegisterForm; 
+export default RegisterForm;

@@ -135,6 +135,15 @@ const LoginForm = () => {
           required
           disabled={loading}
         />
+        <div className="flex justify-end mt-2">
+          <button
+            type="button"
+            onClick={() => navigate("/forgot-password")}
+            className="text-sm text-blue-600 font-semibold hover:text-blue-700 hover:underline transition-colors duration-200"
+          >
+            Forgot Password?
+          </button>
+        </div>
         {success && (
           <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
             <div className="flex items-center">
@@ -191,4 +200,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm; 
+export default LoginForm;

@@ -1,8 +1,8 @@
 import axios from "axios";
 
 // Get API base URL from environment variable, fallback to deployed backend or relative path
-const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "https://health-care-7oam.onrender.com/api";
-// const baseURL = "http://localhost:8080/api";
+// const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "https://health-care-7oam.onrender.com/api";
+const baseURL = "http://localhost:8080/api";
 
 // Add a request interceptor to include token if present
 axios.interceptors.request.use(
@@ -60,6 +60,42 @@ export const loginUser = async (email, password, type) => {
   }
   const res = await axios.post(url, { email, password });
   return res.data;
+};
+
+// ================= Password Reset API =================
+
+/**
+ * Request password reset for patient
+ * @param {string} email - Patient's email address
+ * @returns {Promise<Object>} Success message
+ */
+export const forgotPasswordPatient = async (email) => {
+  const response = await axios.post(`${baseURL}/auth/patient/forgot-password`, { email });
+  return response.data;
+};
+
+/**
+ * Request password reset for doctor
+ * @param {string} email - Doctor's email address
+ * @returns {Promise<Object>} Success message
+ */
+export const forgotPasswordDoctor = async (email) => {
+  const response = await axios.post(`${baseURL}/auth/doctor/forgot-password`, { email });
+  return response.data;
+};
+
+/**
+ * Reset password using token
+ * @param {string} token - Reset token from email
+ * @param {string} newPassword - New password (minimum 6 characters)
+ * @returns {Promise<Object>} Success message
+ */
+export const resetPassword = async (token, newPassword) => {
+  const response = await axios.post(`${baseURL}/auth/reset-password`, {
+    token,
+    newPassword
+  });
+  return response.data;
 };
 
 // ================= Appointment API =================

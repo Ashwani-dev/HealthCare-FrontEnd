@@ -112,7 +112,7 @@ const ContactPage = () => {
           <div className="flex flex-col sm:flex-row sm:justify-center gap-4 text-gray-700 text-base">
             <div className="flex items-center gap-2">
               {icons.mail}
-              <a href="mailto:support@healthcareapp.com" className="text-blue-700 underline">support@healthcareapp.com</a>
+              <a href="mailto:upport@theraconnect.com" className="text-blue-700 underline">support@theraconnect.com</a>
             </div>
             <div className="flex items-center gap-2">
               {icons.phone}
