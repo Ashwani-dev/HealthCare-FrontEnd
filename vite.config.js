@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   
   // Get backend URL from env, remove /api suffix if present for proxy target
-  const backendUrl = env.VITE_BACKEND_BASE_URL?.replace('/api', '') || 'https://adjacent-gianina-health-care-2058c736.koyeb.app'
+  const backendUrl = env.VITE_BACKEND_BASE_URL?.replace('/api', '') || 'https://adjacent-gianina-health-care-2058c736.koyeb.app/api'
   
   return {
     plugins: [react(), tailwindcss()],
