@@ -56,19 +56,19 @@ function filterAppointments(appointments, status, dateFilter, search, searchFiel
     
     if (dateFilter === "today") {
       const todayStr = today.toISOString().slice(0, 10);
-      filtered = filtered.filter(a => a.appointmentDate === todayStr);
+      filtered = filtered.filter(a => a.appointmentStartDate === todayStr);
     } else if (dateFilter === "tomorrow") {
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
       const tomorrowStr = tomorrow.toISOString().slice(0, 10);
-      filtered = filtered.filter(a => a.appointmentDate === tomorrowStr);
+      filtered = filtered.filter(a => a.appointmentStartDate === tomorrowStr);
     } else if (dateFilter === "week") {
       const weekStart = new Date(today);
       weekStart.setDate(today.getDate() - today.getDay());
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6);
       filtered = filtered.filter(a => {
-        const d = new Date(a.appointmentDate);
+        const d = new Date(a.appointmentStartDate);
         return d >= weekStart && d <= weekEnd;
       });
     }

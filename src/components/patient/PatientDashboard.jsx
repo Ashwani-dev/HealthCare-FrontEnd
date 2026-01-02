@@ -14,8 +14,8 @@ const DashboardHeader = ({ patientName, appointments }) => {
     const now = new Date();
     const upcoming = appointments
       .map(a => {
-        // Combine appointmentDate and startTime to create a Date object
-        const dateTimeStr = `${a.appointmentDate}T${a.startTime}`;
+        // Combine appointmentStartDate and startTime to create a Date object
+        const dateTimeStr = `${a.appointmentStartDate}T${a.startTime}`;
         return { ...a, dateObj: new Date(dateTimeStr) };
       })
       .filter(a => a.dateObj > now)
@@ -223,4 +223,4 @@ const PatientDashboard = () => {
   );
 };
 
-export default PatientDashboard; 
+export default PatientDashboard;

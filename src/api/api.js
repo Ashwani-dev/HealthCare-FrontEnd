@@ -1,8 +1,8 @@
 import axios from "axios";
 
 // Get API base URL from environment variable, fallback to deployed backend or relative path
-const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "https://adjacent-gianina-health-care-2058c736.koyeb.app";
-// const baseURL = "http://localhost:8080/api";
+// const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "https://adjacent-gianina-health-care-2058c736.koyeb.app";
+const baseURL = "http://localhost:8080/api";
 
 // Add a request interceptor to include token if present
 axios.interceptors.request.use(
@@ -123,138 +123,109 @@ export const createAppointmentHold = async (holdData) => {
 /**
  * Fetch appointments for a specific doctor with optional filters and pagination
  * @param {number|string} doctorId - ID of the doctor
- * @param {Object} options - Optional parameters for filtering and pagination
- * @param {string} options.appointmentDate - Filter by specific date (YYYY-MM-DD)
- * @param {string} options.startTime - Filter by start time (HH:MM)
- * @param {string} options.status - Filter by appointment status
- * @param {string} options.dateFilter - Filter by date range (today, tomorrow, week)
- * @param {string} options.search - Search term for patient name
- * @param {number} options.page - Page number (0-based, default: 0)
- * @param {number} options.size - Page size (default: 10)
- * @param {string} options.sort - Sort field (default: "appointmentDate,asc")
+ * @param {Object} params - Optional parameters for filtering and pagination
+ * @param {number} params.page - Page number (0-based, default: 0)
+ * @param {number} params.size - Page size (default: 10)
+ * @param {string} params.sort - Sort field (default: "appointmentDate,startTime,desc")
+ * @param {string} params.status - Filter by appointment status
+ * @param {string} params.dateFilter - Filter by date range (today, tomorrow, week)
  * @returns {Promise<Object>} Paginated response with appointments and pagination metadata
  */
-export const fetchDoctorAppointments = async (doctorId, { 
-  appointmentDate, 
-  startTime, 
-  status, 
-  dateFilter,
-  page = 0, 
-  size = 10, 
-  sort = "appointmentDate,asc" 
-} = {}) => {
-  let url = `${baseURL}/appointments/doctor/${doctorId}`;
-  const params = [];
+export const fetchDoctorAppointments = async (doctorId, params = {}) => {
+  const { page = 0, size = 10, sort = "appointmentDate,startTime,desc", status = "ALL", dateFilter = "all" } = params;
   
-  // Add filter parameters
-  if (appointmentDate) params.push(`appointmentDate=${encodeURIComponent(appointmentDate)}`);
-  if (startTime) params.push(`startTime=${encodeURIComponent(startTime)}`);
-  if (status && status !== "ALL") params.push(`status=${encodeURIComponent(status)}`);
-  
-  // Handle date filter conversion
+  // Build query parameters
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+    sort
+  });
+
+  if (status && status !== "ALL") {
+    queryParams.append("status", status);
+  }
+
+  // Handle date filtering with separate start and end dates
   if (dateFilter && dateFilter !== "all") {
     const today = new Date();
-    let targetDate;
+    today.setHours(0, 0, 0, 0);
     
     if (dateFilter === "today") {
-      targetDate = today.getFullYear() + '-' + 
-        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(today.getDate()).padStart(2, '0');
+      const todayStr = today.toISOString().slice(0, 10);
+      queryParams.append("appointmentStartDate", todayStr);
+      queryParams.append("appointmentEndDate", todayStr);
     } else if (dateFilter === "tomorrow") {
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
-      targetDate = tomorrow.getFullYear() + '-' + 
-        String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(tomorrow.getDate()).padStart(2, '0');
+      const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+      queryParams.append("appointmentStartDate", tomorrowStr);
+      queryParams.append("appointmentEndDate", tomorrowStr);
     } else if (dateFilter === "week") {
-      // For week filter, we'll need to handle this differently
-      // For now, let's just use today's date and let the backend handle week filtering
-      targetDate = today.getFullYear() + '-' + 
-        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(today.getDate()).padStart(2, '0');
-    }
-    
-    if (targetDate) {
-      params.push(`appointmentDate=${encodeURIComponent(targetDate)}`);
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - today.getDay());
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      queryParams.append("appointmentStartDate", weekStart.toISOString().slice(0, 10));
+      queryParams.append("appointmentEndDate", weekEnd.toISOString().slice(0, 10));
     }
   }
-  
-  // Add pagination parameters
-  params.push(`page=${page}`);
-  params.push(`size=${size}`);
-  params.push(`sort=${encodeURIComponent(sort)}`);
-  
-  if (params.length) url += "?" + params.join("&");
-  const res = await axios.get(url);
-  return res.data;
+
+  const response = await axios.get(`${baseURL}/appointments/doctor/${doctorId}?${queryParams.toString()}`);
+  return response.data;
 };
 
 /**
  * Fetch appointments for a specific patient with optional filters and pagination
  * @param {number|string} patientId - ID of the patient
- * @param {Object} options - Optional parameters for filtering and pagination
- * @param {string} options.appointmentDate - Filter by specific date (YYYY-MM-DD)
- * @param {string} options.startTime - Filter by start time (HH:MM)
- * @param {string} options.status - Filter by appointment status
- * @param {string} options.dateFilter - Filter by date range (today, tomorrow, week)
- * @param {number} options.page - Page number (0-based, default: 0)
- * @param {number} options.size - Page size (default: 10)
- * @param {string} options.sort - Sort field (default: "appointmentDate,startTime,asc")
+ * @param {Object} params - Optional parameters for filtering and pagination
+ * @param {number} params.page - Page number (0-based, default: 0)
+ * @param {number} params.size - Page size (default: 10)
+ * @param {string} params.sort - Sort field (default: "appointmentDate,startTime,desc")
+ * @param {string} params.status - Filter by appointment status
+ * @param {string} params.dateFilter - Filter by date range (today, tomorrow, week)
  * @returns {Promise<Object>} Paginated response with appointments and pagination metadata
  */
-export const fetchPatientAppointments = async (patientId, { 
-  appointmentDate, 
-  startTime, 
-  status, 
-  dateFilter,
-  page = 0, 
-  size = 10, 
-  sort = "appointmentDate,startTime,asc" 
-} = {}) => {
-  let url = `${baseURL}/appointments/patient/${patientId}`;
-  const params = [];
+export const fetchPatientAppointments = async (patientId, params = {}) => {
+  const { page = 0, size = 10, sort = "appointmentDate,startTime,desc", status = "ALL", dateFilter = "all" } = params;
   
-  // Add filter parameters
-  if (appointmentDate) params.push(`appointmentDate=${encodeURIComponent(appointmentDate)}`);
-  if (startTime) params.push(`startTime=${encodeURIComponent(startTime)}`);
-  if (status && status !== "ALL") params.push(`status=${encodeURIComponent(status)}`);
-  
-  // Handle date filter conversion
+  // Build query parameters
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+    sort
+  });
+
+  if (status && status !== "ALL") {
+    queryParams.append("status", status);
+  }
+
+  // Handle date filtering with separate start and end dates
   if (dateFilter && dateFilter !== "all") {
     const today = new Date();
-    let targetDate;
+    today.setHours(0, 0, 0, 0);
     
     if (dateFilter === "today") {
-      targetDate = today.getFullYear() + '-' + 
-        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(today.getDate()).padStart(2, '0');
+      const todayStr = today.toISOString().slice(0, 10);
+      queryParams.append("appointmentStartDate", todayStr);
+      queryParams.append("appointmentEndDate", todayStr);
     } else if (dateFilter === "tomorrow") {
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
-      targetDate = tomorrow.getFullYear() + '-' + 
-        String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(tomorrow.getDate()).padStart(2, '0');
+      const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+      queryParams.append("appointmentStartDate", tomorrowStr);
+      queryParams.append("appointmentEndDate", tomorrowStr);
     } else if (dateFilter === "week") {
-      // For week filter, we'll need to handle this differently
-      // For now, let's just use today's date and let the backend handle week filtering
-      targetDate = today.getFullYear() + '-' + 
-        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(today.getDate()).padStart(2, '0');
-    }
-    
-    if (targetDate) {
-      params.push(`appointmentDate=${encodeURIComponent(targetDate)}`);
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - today.getDay());
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      queryParams.append("appointmentStartDate", weekStart.toISOString().slice(0, 10));
+      queryParams.append("appointmentEndDate", weekEnd.toISOString().slice(0, 10));
     }
   }
-  
-  // Add pagination parameters
-  params.push(`page=${page}`);
-  params.push(`size=${size}`);
-  params.push(`sort=${encodeURIComponent(sort)}`);
-  
-  if (params.length) url += "?" + params.join("&");
-  const res = await axios.get(url);
-  return res.data;
+
+  const response = await axios.get(`${baseURL}/appointments/patient/${patientId}?${queryParams.toString()}`);
+  return response.data;
 };
 
 /**

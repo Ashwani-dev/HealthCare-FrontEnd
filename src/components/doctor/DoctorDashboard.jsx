@@ -98,7 +98,7 @@ const DoctorDashboard = () => {
   const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
   const safeAppointments = Array.isArray(appointments) ? appointments : [];
   const appointmentsTodayCount = safeAppointments.filter(
-    (appt) => appt.appointmentDate === today
+    (appt) => appt.appointmentStartDate === today
   ).length;
   
 
@@ -162,10 +162,10 @@ const DoctorDashboard = () => {
         <AppointmentsPanel
           appointments={safeAppointments}
           onAction={handleAppointmentAction}
-                        onJoinCall={appt => {
-                // Navigate to the video preview page
-                navigate(`/video-preview/${appt.appointmentId}/DOCTOR`);
-              }}
+          onJoinCall={appt => {
+            // Navigate to the video preview page
+            navigate(`/video-preview/${appt.appointmentId}/DOCTOR`);
+          }}
           currentUserId={user?.userId}
           userRole={user?.role}
           searchField="patientName"
