@@ -199,7 +199,7 @@ export const fetchDoctorAppointments = async (doctorId, {
  * @param {string} options.dateFilter - Filter by date range (today, tomorrow, week)
  * @param {number} options.page - Page number (0-based, default: 0)
  * @param {number} options.size - Page size (default: 10)
- * @param {string} options.sort - Sort field (default: "appointmentDate,asc")
+ * @param {string} options.sort - Sort field (default: "appointmentDate,startTime,asc")
  * @returns {Promise<Object>} Paginated response with appointments and pagination metadata
  */
 export const fetchPatientAppointments = async (patientId, { 
@@ -209,7 +209,7 @@ export const fetchPatientAppointments = async (patientId, {
   dateFilter,
   page = 0, 
   size = 10, 
-  sort = "appointmentDate,asc" 
+  sort = "appointmentDate,startTime,asc" 
 } = {}) => {
   let url = `${baseURL}/appointments/patient/${patientId}`;
   const params = [];

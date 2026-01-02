@@ -358,7 +358,7 @@ const PatientPaymentsPage = () => {
                     <th className="text-left px-5 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
                     <th className="text-left px-5 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Mode</th>
                     <th className="text-left px-5 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Amount</th>
-                    <th className="text-left px-5 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Reference</th>
+                    <th className="text-left px-5 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Order ID</th>
                     <th className="text-left px-5 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Date & Time</th>
                   </tr>
                 </thead>
@@ -398,7 +398,7 @@ const PatientPaymentsPage = () => {
                         <span className="text-gray-900 font-bold text-base">₹{Number(p.orderAmount).toFixed(2)}</span>
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="text-gray-600 text-sm font-medium">{p.referenceId}</span>
+                        <span className="text-gray-600 text-sm font-medium">{p.orderId}</span>
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2 text-gray-600 text-sm">

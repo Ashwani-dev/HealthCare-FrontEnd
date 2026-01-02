@@ -37,8 +37,8 @@ const DATE_FILTERS = [
 ];
 
 const SORT_OPTIONS = [
-  { label: "Date (Oldest First)", value: "appointmentDate,asc" },
-  { label: "Date (Newest First)", value: "appointmentDate,desc" },
+  { label: "Date (Oldest First)", value: "appointmentDate,startTime,asc" },
+  { label: "Date (Newest First)", value: "appointmentDate,startTime,desc" },
 ];
 
 function filterAppointments(appointments, status, dateFilter, search, searchField) {
@@ -198,7 +198,7 @@ const AppointmentsPanel = ({
   pageSize = 10,
   onPageChange = null,
   onSortChange = null,
-  currentSort = "appointmentDate,desc",
+  currentSort = "appointmentDate,startTime,desc",
   // Filter props for paginated mode
   onFilterChange = null,
   currentStatus = "ALL",

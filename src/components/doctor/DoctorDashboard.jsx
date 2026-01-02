@@ -42,13 +42,13 @@ const DoctorDashboard = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [pageSize] = useState(10);
-  const [currentSort, setCurrentSort] = useState("appointmentDate,desc");
+  const [currentSort, setCurrentSort] = useState("appointmentDate,startTime,desc");
 
   // Filter state
   const [currentStatus, setCurrentStatus] = useState("ALL");
   const [currentDateFilter, setCurrentDateFilter] = useState("all");
 
-  const fetchAppointments = useCallback(async (page = 0, sort = "appointmentDate,desc", status = "ALL", dateFilter = "all") => {
+  const fetchAppointments = useCallback(async (page = 0, sort = "appointmentDate,startTime,desc", status = "ALL", dateFilter = "all") => {
     if (!user?.userId) return { appointments: [], totalPages: 0, totalElements: 0 };
     
     try {
@@ -129,7 +129,6 @@ const DoctorDashboard = () => {
     if (action === "cancel") {
       try {
         const res = await cancelAppointment(appointment.appointmentId);
-        alert(res.message || "Appointment cancelled successfully");
         // Refresh appointments
         if (user?.userId) {
           const apptsData = await fetchAppointments(currentPage, currentSort, currentStatus, currentDateFilter);
