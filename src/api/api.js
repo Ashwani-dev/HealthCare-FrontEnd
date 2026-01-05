@@ -1,4 +1,5 @@
 import axios from "axios";
+import { formatLocalDate } from "../utils/dateTime";
 
 // Get API base URL from environment variable, fallback to deployed backend or relative path
 const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "https://adjacent-gianina-health-care-2058c736.koyeb.app";
@@ -148,16 +149,15 @@ export const fetchDoctorAppointments = async (doctorId, params = {}) => {
   // Handle date filtering with separate start and end dates
   if (dateFilter && dateFilter !== "all") {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
     
     if (dateFilter === "today") {
-      const todayStr = today.toISOString().slice(0, 10);
+      const todayStr = formatLocalDate(today);
       queryParams.append("appointmentStartDate", todayStr);
       queryParams.append("appointmentEndDate", todayStr);
     } else if (dateFilter === "tomorrow") {
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+      const tomorrowStr = formatLocalDate(tomorrow);
       queryParams.append("appointmentStartDate", tomorrowStr);
       queryParams.append("appointmentEndDate", tomorrowStr);
     } else if (dateFilter === "week") {
@@ -165,8 +165,8 @@ export const fetchDoctorAppointments = async (doctorId, params = {}) => {
       weekStart.setDate(today.getDate() - today.getDay());
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6);
-      queryParams.append("appointmentStartDate", weekStart.toISOString().slice(0, 10));
-      queryParams.append("appointmentEndDate", weekEnd.toISOString().slice(0, 10));
+      queryParams.append("appointmentStartDate", formatLocalDate(weekStart));
+      queryParams.append("appointmentEndDate", formatLocalDate(weekEnd));
     }
   }
 
@@ -202,16 +202,15 @@ export const fetchPatientAppointments = async (patientId, params = {}) => {
   // Handle date filtering with separate start and end dates
   if (dateFilter && dateFilter !== "all") {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
     
     if (dateFilter === "today") {
-      const todayStr = today.toISOString().slice(0, 10);
+      const todayStr = formatLocalDate(today);
       queryParams.append("appointmentStartDate", todayStr);
       queryParams.append("appointmentEndDate", todayStr);
     } else if (dateFilter === "tomorrow") {
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+      const tomorrowStr = formatLocalDate(tomorrow);
       queryParams.append("appointmentStartDate", tomorrowStr);
       queryParams.append("appointmentEndDate", tomorrowStr);
     } else if (dateFilter === "week") {
@@ -219,8 +218,8 @@ export const fetchPatientAppointments = async (patientId, params = {}) => {
       weekStart.setDate(today.getDate() - today.getDay());
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6);
-      queryParams.append("appointmentStartDate", weekStart.toISOString().slice(0, 10));
-      queryParams.append("appointmentEndDate", weekEnd.toISOString().slice(0, 10));
+      queryParams.append("appointmentStartDate", formatLocalDate(weekStart));
+      queryParams.append("appointmentEndDate", formatLocalDate(weekEnd));
     }
   }
 
@@ -236,6 +235,24 @@ export const fetchPatientAppointments = async (patientId, params = {}) => {
 export const cancelAppointment = async (appointmentId) => {
   const url = `${baseURL}/appointments/${appointmentId}`;
   const res = await axios.delete(url);
+  return res.data;
+};
+
+/**
+ * Reschedule an existing appointment
+ * @param {number} appointmentId - The appointment ID to reschedule
+ * @param {string} appointmentDate - New date in YYYY-MM-DD format
+ * @param {string} startTime - New start time in HH:mm:ss format
+ * @param {string} endTime - New end time in HH:mm:ss format
+ * @returns {Promise<Object>} Updated appointment object
+ */
+export const rescheduleAppointment = async (appointmentId, appointmentDate, startTime, endTime) => {
+  const url = `${baseURL}/appointments/${appointmentId}`;
+  const res = await axios.put(url, {
+    appointmentDate,
+    startTime,
+    endTime
+  });
   return res.data;
 };
 
@@ -305,13 +322,23 @@ export const fetchDoctorsSearch = async (q = "") => {
 };
 
 /**
- * Fetch doctors filtered by specialization
- * @param {string} specialization - Specialization to filter by
- * @returns {Promise<Array>} Array of doctors with the specified specialization
+ * Fetch doctors by specialization and optional gender filter
+ * @param {string} specialization - The specialization to filter by
+ * @param {string} gender - Optional gender filter (MALE, FEMALE)
+ * @returns {Promise<Array>} List of doctors matching the criteria
  */
-export const fetchDoctorsBySpecialization = async (specialization = "") => {
-  let url = `${baseURL}/doctor/filter`;
-  if (specialization) url += `?specialization=${encodeURIComponent(specialization)}`;
+export const fetchDoctorsBySpecialization = async (specialization = "", gender = "") => {
+  const queryParams = new URLSearchParams();
+  
+  if (specialization) {
+    queryParams.append("specialization", specialization);
+  }
+  
+  if (gender) {
+    queryParams.append("gender", gender.toUpperCase());
+  }
+  
+  const url = `${baseURL}/doctor/filter${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
   const res = await axios.get(url);
   return res.data;
 };

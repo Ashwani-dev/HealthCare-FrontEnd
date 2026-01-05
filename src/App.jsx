@@ -24,6 +24,7 @@ const PaymentStatus = lazy(() => import("./components/payment/PaymentStatus"));
 const PatientPaymentsPage = lazy(() => import("./components/pages/PatientPaymentsPage"));
 const ForgotPasswordPage = lazy(() => import("./components/auth/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./components/auth/ResetPasswordPage"));
+const UserJourneyPage = lazy(() => import("./components/pages/UserJourneyPage"));
 
 // Loading Spinner Component
 const LoadingSpinner = () => (
@@ -172,6 +173,7 @@ const AppContent = () => {
           {/* Password Reset Routes - Public */}
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/how-it-works" element={<UserJourneyPage />} />
           
           {/* Protected Routes - Require Authentication */}
           <Route 

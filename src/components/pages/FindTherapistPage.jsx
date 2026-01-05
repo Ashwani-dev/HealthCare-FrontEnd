@@ -8,7 +8,7 @@ import { ChevronDownIcon, ChevronUpIcon, XIcon } from "@heroicons/react/solid";
 const specializations = [
   "Anxiety", "Depression", "Trauma", "Relationships", "Family Counseling", "CBT", "Counseling psychology"
 ];
-const genders = ["Male", "Female"];
+const genders = ["MALE", "FEMALE"];
 const languages = ["English", "Hindi", "Kannada"];
 const approaches = ["Cognitive Behavioral Therapy", "Psychodynamic Therapy", "Family Therapy", "Mindfulness"];
 
@@ -132,15 +132,30 @@ const FindTherapistPage = () => {
     });
   };
   const applyFilters = () => {
-    if (pendingFilters.specialization.length > 0) {
+    const hasSpecialization = pendingFilters.specialization.length > 0;
+    const hasGender = pendingFilters.gender && pendingFilters.gender !== "";
+    
+    if (hasSpecialization || hasGender) {
       setLoading(true);
-      // Only use the first specialization for backend filter (or join if you want multi-filter support)
-      fetchDoctorsBySpecialization(pendingFilters.specialization[0]).then((data) => {
-        setDoctors(data);
-        setLoading(false);
-        setFilters(pendingFilters);
-      });
+      
+      // Get first specialization (or empty string if none selected)
+      const specialization = hasSpecialization ? pendingFilters.specialization[0] : "";
+      
+      // Get gender (convert to uppercase for backend, or empty string if none selected)
+      const gender = hasGender ? pendingFilters.gender : "";
+      
+      fetchDoctorsBySpecialization(specialization, gender)
+        .then((data) => {
+          setDoctors(data);
+          setLoading(false);
+          setFilters(pendingFilters);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch doctors by filters:", error);
+          setLoading(false);
+        });
     } else {
+      // No backend filters applied, just update local filters
       setFilters(pendingFilters);
     }
   };
@@ -198,25 +213,43 @@ const FindTherapistPage = () => {
       } else {
         updated = { ...f, [type]: "" };
       }
-      // If removing a specialization, refetch from backend
-      if (type === "specialization") {
+      
+      // If removing a specialization or gender, refetch from backend
+      if (type === "specialization" || type === "gender") {
         setLoading(true);
         const specs = Array.isArray(updated.specialization) ? updated.specialization : [];
-        if (specs.length > 0) {
-          fetchDoctorsBySpecialization(specs[0]).then((data) => {
-            setDoctors(data);
-            setLoading(false);
-          });
+        const hasSpec = specs.length > 0;
+        const hasGender = updated.gender && updated.gender !== "";
+        
+        if (hasSpec || hasGender) {
+          const specialization = hasSpec ? specs[0] : "";
+          const gender = hasGender ? updated.gender.toUpperCase() : "";
+          
+          fetchDoctorsBySpecialization(specialization, gender)
+            .then((data) => {
+              setDoctors(data);
+              setLoading(false);
+            })
+            .catch((error) => {
+              console.error("Failed to fetch doctors:", error);
+              setLoading(false);
+            });
         } else {
-          // No specialization selected, fetch all (or fallback to search)
-          fetchDoctorsSearch("").then((data) => {
-            setDoctors(data);
-            setLoading(false);
-          });
+          // No filters active, fetch all
+          fetchDoctorsSearch("")
+            .then((data) => {
+              setDoctors(data);
+              setLoading(false);
+            })
+            .catch((error) => {
+              console.error("Failed to fetch doctors:", error);
+              setLoading(false);
+            });
         }
       }
       return updated;
     });
+    
     setPendingFilters(f => {
       if (Array.isArray(f[type])) {
         return { ...f, [type]: f[type].filter(v => v !== value) };

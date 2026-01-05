@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { 
   Card, CardContent, CardActions, Button, Typography, 
   Tooltip, Dialog, DialogActions, DialogContent, 
-  DialogContentText, DialogTitle, Snackbar, Alert, Box, Divider, Chip 
+  DialogContentText, DialogTitle, Snackbar, Alert, Box, Divider, Chip,
+  CircularProgress
 } from "@mui/material";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import { FaCalendarAlt, FaTrash, FaEdit, FaClock } from "react-icons/fa";
-import { differenceInMinutes, parseISO, addMinutes, subMinutes, format } from "date-fns";
+import { differenceInMinutes, parseISO, addMinutes, subMinutes, format, addDays } from "date-fns";
 import { formatTimeToAMPM } from "../../utils/dateTime";
+import { rescheduleAppointment, fetchDoctorAvailability, fetchDoctorAvailableSlots } from "../../api/api";
 
 const STATUS_STYLES = {
   SCHEDULED: { color: "#008a7b", bg: "#e0f2f1", border: "#b2dfdb", accent: "#00bfa5" },
@@ -40,7 +42,17 @@ function getJoinTooltip(joinable, status) {
 const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, userRole }) => {
   const [expanded, setExpanded] = useState(false);
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+  const [openRescheduleDialog, setOpenRescheduleDialog] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  
+  // Reschedule state
+  const [availability, setAvailability] = useState([]);
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [rescheduling, setRescheduling] = useState(false);
 
   const { doctorName, appointmentDate, startTime, endTime, status, description } = appointment;
   const theme = STATUS_STYLES[status] || { color: "#546e7a", bg: "#f5f7f9", border: "#cfd8dc", accent: "#90a4ae" };
@@ -51,22 +63,169 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, use
   const joinable = isJoinable(appointmentDate, startTime) && status === "SCHEDULED";
   const isWithin24Hours = differenceInMinutes(appointmentDateTime, new Date()) < 24 * 60;
   const normalizedRole = userRole?.toLowerCase?.() || "";
+  
+  // Check if appointment belongs to current user
   const appointmentPatientId = appointment.patientId ?? appointment.patient_id ?? appointment.patient?.id;
-  const belongsToCurrentUser = normalizedRole === "patient" ? String(appointmentPatientId) === String(currentUserId) : false;
-  const canCancel = status === "SCHEDULED" && normalizedRole === "patient" && belongsToCurrentUser && !isWithin24Hours;
+  const appointmentDoctorId = appointment.doctorId ?? appointment.doctor_id ?? appointment.doctor?.id;
+  
+  const belongsToCurrentUser = 
+    (normalizedRole === "patient" && String(appointmentPatientId) === String(currentUserId)) ||
+    (normalizedRole === "doctor" && String(appointmentDoctorId) === String(currentUserId));
+  
+  const canCancel = status === "SCHEDULED" && belongsToCurrentUser && !isWithin24Hours;
+  const canReschedule = status === "SCHEDULED" && belongsToCurrentUser && !isWithin24Hours;
 
   const handleConfirmCancel = () => {
     onAction && onAction("cancel", appointment);
     setOpenCancelDialog(false);
-    setSnackbar({ open: true, message: "Appointment cancelled successfully." });
+    setSnackbar({ open: true, message: "Appointment cancelled successfully.", severity: "success" });
+  };
+
+  // Step 1: Open dialog and fetch doctor's weekly availability
+  const handleOpenReschedule = async () => {
+    setOpenRescheduleDialog(true);
+    setLoadingAvailability(true);
+    setSelectedDate(null);
+    setSelectedSlot(null);
+    setTimeSlots([]);
+    
+    try {
+      const doctorId = appointment.doctorId || appointment.doctor_id || appointment.doctor?.id;
+      const availData = await fetchDoctorAvailability(doctorId);
+      setAvailability(availData || []);
+    } catch (error) {
+      console.error("Failed to fetch availability:", error);
+      setSnackbar({ 
+        open: true, 
+        message: "Failed to load doctor's availability. Please try again.", 
+        severity: "error" 
+      });
+      setAvailability([]);
+    } finally {
+      setLoadingAvailability(false);
+    }
+  };
+
+  // Generate next 14 days based on doctor's availability
+  const getAvailableDates = () => {
+    const dates = [];
+    const today = new Date();
+    
+    for (let i = 0; i < 14; i++) {
+      const date = addDays(today, i);
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const dayOfWeek = format(date, 'EEEE').toUpperCase();
+      
+      // Check if doctor has slots on this day
+      const hasSlots = availability.some(slot => 
+        slot.dayOfWeek === dayOfWeek && slot.available
+      );
+      
+      if (hasSlots) {
+        dates.push({
+          date: dateStr,
+          display: format(date, 'EEE, MMM d'),
+          dayOfWeek: dayOfWeek
+        });
+      }
+    }
+    return dates;
+  };
+
+  // Step 2: When user clicks a date, fetch available time slots for that specific date
+  const handleDateSelect = async (dateStr) => {
+    setSelectedDate(dateStr);
+    setSelectedSlot(null);
+    setLoadingSlots(true);
+    setTimeSlots([]);
+
+    try {
+      const doctorId = appointment.doctorId || appointment.doctor_id || appointment.doctor?.id;
+      const slots = await fetchDoctorAvailableSlots(doctorId, dateStr);
+      setTimeSlots(slots || []);
+      
+      if (!slots || slots.length === 0) {
+        setSnackbar({ 
+          open: true, 
+          message: "No available slots for this date", 
+          severity: "info" 
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch time slots:", error);
+      setSnackbar({ 
+        open: true, 
+        message: "Failed to load time slots. Please try again.", 
+        severity: "error" 
+      });
+      setTimeSlots([]);
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  const handleConfirmReschedule = async () => {
+    if (!selectedDate || !selectedSlot) {
+      setSnackbar({ 
+        open: true, 
+        message: "Please select both date and time slot", 
+        severity: "warning" 
+      });
+      return;
+    }
+
+    setRescheduling(true);
+    
+    // Call onAction with reschedule data - let parent handle the API call
+    if (onAction) {
+      try {
+        await onAction("reschedule", appointment, {
+          appointmentDate: selectedDate,
+          startTime: selectedSlot.startTime,
+          endTime: selectedSlot.endTime
+        });
+        
+        setSnackbar({ 
+          open: true, 
+          message: "Appointment rescheduled successfully!", 
+          severity: "success" 
+        });
+        
+        setOpenRescheduleDialog(false);
+        setSelectedDate(null);
+        setSelectedSlot(null);
+        setTimeSlots([]);
+      } catch (error) {
+        console.error("Reschedule error:", error);
+        const errorMsg = error?.message || "Failed to reschedule appointment";
+        setSnackbar({ 
+          open: true, 
+          message: errorMsg, 
+          severity: "error" 
+        });
+      }
+    }
+    
+    setRescheduling(false);
   };
 
   const getCancelTooltip = () => {
     if (canCancel) return "Cancel appointment";
     if (status !== "SCHEDULED") return "Only scheduled sessions can be cancelled";
+    if (!belongsToCurrentUser) return "You can only cancel your own appointments";
     if (isWithin24Hours) return "Cancellations restricted within 24 hours";
     return "Action unavailable";
   };
+
+  const getRescheduleTooltip = () => {
+    if (canReschedule) return "Reschedule appointment";
+    if (status !== "SCHEDULED") return "Only scheduled sessions can be rescheduled";
+    if (!belongsToCurrentUser) return "You can only reschedule your own appointments";
+    if (isWithin24Hours) return "Rescheduling restricted within 24 hours";
+    return "Action unavailable";
+  };
+
+  const availableDates = getAvailableDates();
 
   return (
     <>
@@ -81,8 +240,12 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, use
         <CardContent sx={{ p: { xs: 2, md: 3 } }}>
           <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} gap={2} mb={2}>
             <Box>
-              <Typography variant="overline" color="#78909c" fontWeight={800} sx={{ letterSpacing: 1.2, fontSize: '0.65rem' }}>PRACTITIONER</Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: '#283593', fontSize: { xs: '1.25rem', md: '1.45rem' } }}>Dr. {doctorName}</Typography>
+              <Typography variant="overline" color="#78909c" fontWeight={800} sx={{ letterSpacing: 1.2, fontSize: '0.65rem' }}>
+                {normalizedRole === "doctor" ? "PATIENT" : "PRACTITIONER"}
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: '#283593', fontSize: { xs: '1.25rem', md: '1.45rem' } }}>
+                {normalizedRole === "doctor" ? (appointment.patientName || "Patient") : `Dr. ${doctorName}`}
+              </Typography>
             </Box>
             <Chip label={status} size="small" sx={{ bgcolor: theme.bg, color: theme.color, fontWeight: 700, borderRadius: '6px', border: `1px solid ${theme.border}`, fontSize: '0.75rem' }} />
           </Box>
@@ -121,7 +284,7 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, use
 
         <CardActions sx={{ px: { xs: 2, md: 3 }, pb: { xs: 2, md: 3 }, flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'flex-end', pt: 0 }}>
           
-          {/* Cancel Button with Border and Radius */}
+          {/* Cancel Button */}
           <Tooltip title={getCancelTooltip()} arrow placement="top">
             <Box sx={{ width: { xs: '50%', sm: 'auto' } }}>
               <Button 
@@ -133,10 +296,10 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, use
                 sx={{ 
                   fontWeight: 700, 
                   textTransform: 'none', 
-                  borderRadius: 1.5, // Added radius
+                  borderRadius: 1.5,
                   px: 3,
                   color: canCancel ? '#ef5350' : '#cfd8dc',
-                  borderColor: canCancel ? '#ffcdd2' : '#f1f1f1', // Added border color
+                  borderColor: canCancel ? '#ffcdd2' : '#f1f1f1',
                   '&:hover': { 
                     bgcolor: '#fff5f5',
                     borderColor: '#ef5350' 
@@ -152,16 +315,35 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, use
             </Box>
           </Tooltip>
 
-          <Button 
-            variant="outlined" 
-            fullWidth={{ xs: true, sm: false }} 
-            onClick={() => onAction("reschedule", appointment)} 
-            startIcon={<FaEdit size={12} />}
-            sx={{ borderRadius: 1.5, textTransform: 'none', fontWeight: 700, color: '#475569', borderColor: '#cbd5e1', px: 3, '&:hover': { borderColor: '#283593', bgcolor: '#f0f2ff' } }}
-          >
-            Reschedule
-          </Button>
+          {/* Reschedule Button */}
+          <Tooltip title={getRescheduleTooltip()} arrow placement="top">
+            <Box sx={{ width: { xs: '50%', sm: 'auto' } }}>
+              <Button 
+                variant="outlined" 
+                fullWidth 
+                disabled={!canReschedule}
+                onClick={handleOpenReschedule} 
+                startIcon={<FaEdit size={12} />}
+                sx={{ 
+                  borderRadius: 1.5, 
+                  textTransform: 'none', 
+                  fontWeight: 700, 
+                  color: canReschedule ? '#475569' : '#cfd8dc', 
+                  borderColor: canReschedule ? '#cbd5e1' : '#f1f1f1', 
+                  px: 3, 
+                  '&:hover': { borderColor: '#283593', bgcolor: '#f0f2ff' },
+                  '&.Mui-disabled': {
+                    borderColor: '#f1f1f1',
+                    color: '#cfd8dc'
+                  }
+                }}
+              >
+                Reschedule
+              </Button>
+            </Box>
+          </Tooltip>
 
+          {/* Join Call Button */}
           <Tooltip title={getJoinTooltip(joinable, status)} arrow placement="top">
             <Box sx={{ width: { xs: '100%', sm: 'auto' } }}>
               <Button 
@@ -184,19 +366,185 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, use
         </CardActions>
       </Card>
 
-      <Dialog open={openCancelDialog} onClose={() => setOpenCancelDialog(false)} PaperProps={{ sx: { borderRadius: 3 } }}>
+      {/* Cancel Dialog */}
+      <Dialog 
+        open={openCancelDialog} 
+        onClose={() => setOpenCancelDialog(false)}
+        slotProps={{
+          paper: {
+            sx: { borderRadius: 3 }
+          }
+        }}
+      >
         <DialogTitle sx={{ fontWeight: 800, pt: 3, color: '#283593' }}>Confirm Cancellation</DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ color: '#64748b' }}>Are you sure you want to cancel your session with <strong>Dr. {doctorName}</strong>?</DialogContentText>
+          <DialogContentText sx={{ color: '#64748b' }}>
+            Are you sure you want to cancel your session with <strong>{normalizedRole === "doctor" ? appointment.patientName : `Dr. ${doctorName}`}</strong>?
+          </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ pb: 3, px: 3, gap: 1 }}>
-          <Button onClick={() => setOpenCancelDialog(false)} sx={{ color: '#94a3b8', fontWeight: 700 }}>No, Keep It</Button>
-          <Button onClick={handleConfirmCancel} variant="contained" disableElevation color="error" sx={{ borderRadius: 1.5, fontWeight: 700 }}>Yes, Cancel</Button>
+          <Button onClick={() => setOpenCancelDialog(false)} sx={{ color: '#94a3b8', fontWeight: 700 }}>
+            No, Keep It
+          </Button>
+          <Button onClick={handleConfirmCancel} variant="contained" disableElevation color="error" sx={{ borderRadius: 1.5, fontWeight: 700 }}>
+            Yes, Cancel
+          </Button>
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar({ ...snackbar, open: false })} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert severity="success" variant="filled" sx={{ borderRadius: 1.5, fontWeight: 700 }}>{snackbar.message}</Alert>
+      {/* Reschedule Dialog */}
+      <Dialog 
+        open={openRescheduleDialog} 
+        onClose={() => !rescheduling && setOpenRescheduleDialog(false)}
+        maxWidth="md"
+        fullWidth
+        slotProps={{
+          paper: {
+            sx: { borderRadius: 3, p: 2 }
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, pt: 2, color: '#283593', pb: 1 }}>
+          Reschedule Appointment
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          <DialogContentText sx={{ color: '#64748b', mb: 3 }}>
+            Select a new date and time for your appointment with <strong>{normalizedRole === "doctor" ? appointment.patientName : `Dr. ${doctorName}`}</strong>
+          </DialogContentText>
+
+          {loadingAvailability ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200, flexDirection: 'column', gap: 2 }}>
+              <CircularProgress size={40} />
+              <Typography color="text.secondary">Loading doctor's availability...</Typography>
+            </Box>
+          ) : availableDates.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography color="text.secondary">No available dates found for the next 14 days.</Typography>
+            </Box>
+          ) : (
+            <Box>
+              {/* Date Selection */}
+              <Box mb={3}>
+                <Typography variant="subtitle2" fontWeight={700} mb={1.5} color="#475569">
+                  Select New Date
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 1.5, maxHeight: 300, overflowY: 'auto', pr: 1 }}>
+                  {availableDates.map((dateObj) => (
+                    <Button
+                      key={dateObj.date}
+                      variant={selectedDate === dateObj.date ? "contained" : "outlined"}
+                      onClick={() => handleDateSelect(dateObj.date)}
+                      sx={{
+                        py: 1.5,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        fontSize: '0.875rem',
+                        ...(selectedDate === dateObj.date && {
+                          bgcolor: '#283593',
+                          '&:hover': { bgcolor: '#1a237e' }
+                        })
+                      }}
+                    >
+                      {dateObj.display}
+                    </Button>
+                  ))}
+                </Box>
+              </Box>
+
+              {/* Time Slot Selection */}
+              {selectedDate && (
+                <Box>
+                  <Typography variant="subtitle2" fontWeight={700} mb={1.5} color="#475569">
+                    Select New Time
+                  </Typography>
+                  {loadingSlots ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100, flexDirection: 'column', gap: 1 }}>
+                      <CircularProgress size={32} />
+                      <Typography color="text.secondary" fontSize="0.875rem">Loading available slots...</Typography>
+                    </Box>
+                  ) : timeSlots.length > 0 ? (
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 1.5, maxHeight: 250, overflowY: 'auto', pr: 1 }}>
+                      {timeSlots.map((slot, idx) => (
+                        <Button
+                          key={idx}
+                          variant={selectedSlot?.startTime === slot.startTime ? "contained" : "outlined"}
+                          onClick={() => setSelectedSlot(slot)}
+                          sx={{
+                            py: 1.5,
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            fontSize: '0.875rem',
+                            ...(selectedSlot?.startTime === slot.startTime && {
+                              bgcolor: '#008a7b',
+                              '&:hover': { bgcolor: '#006d5b' }
+                            })
+                          }}
+                        >
+                          {formatTimeToAMPM(slot.startTime)}
+                        </Button>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Typography color="text.secondary" fontSize="0.875rem" textAlign="center" py={2}>
+                      No available time slots for this date
+                    </Typography>
+                  )}
+                </Box>
+              )}
+
+              {!selectedDate && (
+                <Typography color="text.secondary" fontSize="0.875rem" textAlign="center" mt={2}>
+                  Please select a date to view available time slots
+                </Typography>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ pb: 2, px: 3, gap: 1.5, pt: 2 }}>
+          <Button 
+            onClick={() => {
+              setOpenRescheduleDialog(false);
+              setSelectedDate(null);
+              setSelectedSlot(null);
+              setTimeSlots([]);
+            }} 
+            disabled={rescheduling}
+            sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleConfirmReschedule} 
+            variant="contained" 
+            disableElevation 
+            disabled={!selectedDate || !selectedSlot || rescheduling}
+            startIcon={rescheduling ? <CircularProgress size={16} color="inherit" /> : null}
+            sx={{ 
+              borderRadius: 1.5, 
+              fontWeight: 700, 
+              textTransform: 'none',
+              bgcolor: '#283593',
+              '&:hover': { bgcolor: '#1a237e' },
+              px: 3
+            }}
+          >
+            {rescheduling ? "Updating..." : "Confirm Reschedule"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={4000} 
+        onClose={() => setSnackbar({ ...snackbar, open: false })} 
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={snackbar.severity} variant="filled" sx={{ borderRadius: 1.5, fontWeight: 700 }}>
+          {snackbar.message}
+        </Alert>
       </Snackbar>
     </>
   );

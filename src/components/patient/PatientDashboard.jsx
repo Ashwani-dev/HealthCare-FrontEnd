@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
 import AppointmentsPanel from "../common/AppointmentsPanel";
-import { fetchPatientAppointments, fetchPatientProfile, cancelAppointment } from "../../api/api";
+import { fetchPatientAppointments, fetchPatientProfile, cancelAppointment, rescheduleAppointment } from "../../api/api";
 import { useNavigate } from "react-router-dom";
 
 
@@ -140,10 +140,10 @@ const PatientDashboard = () => {
   };
 
   // Stub action handler
-  const handleAppointmentAction = async (action, appointment) => {
+  const handleAppointmentAction = async (action, appointment, updateData) => {
     if (action === "cancel") {
       try {
-        const res = await cancelAppointment(appointment.appointmentId);
+        await cancelAppointment(appointment.appointmentId);
         // Refresh appointments
         if (user?.userId) {
           const apptsData = await fetchAppointments(currentPage, currentSort, currentStatus, currentDateFilter);
@@ -152,14 +152,42 @@ const PatientDashboard = () => {
           setTotalElements(apptsData.totalElements);
         }
       } catch (err) {
-        if (err.response && err.response.data && err.response.data.status === "CANCELLED") {
+        if (err.response?.data?.status === "CANCELLED") {
           alert(err.response.data.error || "Appointment already cancelled");
         } else {
           alert("Failed to cancel appointment");
         }
       }
-    } else {
-      alert(`${action} clicked for appointment with Dr. ${appointment.doctorName}`);
+    } else if (action === "reschedule") {
+      try {
+        // Handle reschedule with the provided updateData
+        await rescheduleAppointment(
+          appointment.appointmentId,
+          updateData.appointmentDate,
+          updateData.startTime,
+          updateData.endTime
+        );
+        
+        // Refresh appointments list
+        if (user?.userId) {
+          const apptsData = await fetchAppointments(currentPage, currentSort, currentStatus, currentDateFilter);
+          setAppointments(apptsData.appointments);
+          setTotalPages(apptsData.totalPages);
+          setTotalElements(apptsData.totalElements);
+        }
+      } catch (err) {
+        console.error("Failed to reschedule:", err);
+        throw err; // Re-throw to let child handle error display
+      }
+    } else if (action === "refresh") {
+      // Legacy refresh support
+      console.log(`Refresh triggered for appointment with ${appointment.doctorName || appointment.patientName}`);
+      if (user?.userId) {
+        const apptsData = await fetchAppointments(currentPage, currentSort, currentStatus, currentDateFilter);
+        setAppointments(apptsData.appointments);
+        setTotalPages(apptsData.totalPages);
+        setTotalElements(apptsData.totalElements);
+      }
     }
   };
 
