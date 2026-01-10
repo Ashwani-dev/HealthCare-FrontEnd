@@ -29,13 +29,14 @@ const PatientRegisterForm = () => {
   const [focusedField, setFocusedField] = useState(null);
   const [fieldValidation, setFieldValidation] = useState({});
   const [touched, setTouched] = useState({});
+  const [constraintsShownOnce, setConstraintsShownOnce] = useState({});
 
   const handleChange = e => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
     if (err) setErr("");
 
-    // Real-time validation
+    // Real-time validation only if field was touched
     if (touched[name]) {
       validateField(name, value);
     }
@@ -75,13 +76,20 @@ const PatientRegisterForm = () => {
     return validation.isValid;
   };
 
+  const handleFocus = (fieldName) => {
+    setFocusedField(fieldName);
+    // Mark this field's constraints as shown
+    if (!constraintsShownOnce[fieldName]) {
+      setConstraintsShownOnce(prev => ({ ...prev, [fieldName]: true }));
+    }
+  };
+
   const handleBlur = (fieldName) => {
     setTouched(prev => ({ ...prev, [fieldName]: true }));
     validateField(fieldName, form[fieldName]);
     setFocusedField(null);
   };
 
-  // Helper function to decode JWT token
   const decodeJWT = (token) => {
     try {
       const base64Url = token.split('.')[1];
@@ -112,6 +120,14 @@ const PatientRegisterForm = () => {
         contact_number: true,
         address: true
       });
+      // Show constraints for ALL fields that have errors on submit
+      const newConstraintsShown = {};
+      Object.keys(validation.validations).forEach(key => {
+        if (!validation.validations[key].isValid) {
+          newConstraintsShown[key] = true;
+        }
+      });
+      setConstraintsShownOnce(prev => ({ ...prev, ...newConstraintsShown }));
       return;
     }
 
@@ -121,14 +137,11 @@ const PatientRegisterForm = () => {
     try {
       const res = await registerUser(form, "patient");
       
-      // Handle different response structures
       let token = null;
       let userData = null;
       
-      // Check if response is a string (JWT token)
       if (typeof res === 'string' && res.startsWith('eyJ')) {
         token = res;
-        // Decode JWT to extract user info
         const decoded = decodeJWT(token);
         if (decoded) {
           userData = {
@@ -138,9 +151,7 @@ const PatientRegisterForm = () => {
             token: token
           };
         }
-      } 
-      // Check if response is an object with token
-      else if (res && typeof res === 'object') {
+      } else if (res && typeof res === 'object') {
         token = res.token || res;
         if (res.success || token || (res.userId && res.role)) {
           userData = {
@@ -153,13 +164,10 @@ const PatientRegisterForm = () => {
         }
       }
       
-      // If we have token and user data, login and redirect
       if (token && userData) {
         login(userData);
         navigate("/dashboard");
-      } 
-      // If we only have token but no decoded data, try to use it anyway
-      else if (token) {
+      } else if (token) {
         const decoded = decodeJWT(token);
         if (decoded) {
           login({
@@ -170,20 +178,15 @@ const PatientRegisterForm = () => {
           });
           navigate("/dashboard");
         } else {
-          // Token exists but couldn't decode - redirect to login
           navigate("/login", { 
             state: { message: "Registration successful! Please login with your credentials." } 
           });
         }
-      }
-      // Check for success message
-      else if (res && typeof res === 'object' && res.message && res.message.toLowerCase().includes("success")) {
+      } else if (res && typeof res === 'object' && res.message && res.message.toLowerCase().includes("success")) {
         navigate("/login", { 
           state: { message: "Registration successful! Please login with your credentials." } 
         });
-      } 
-      // Fallback
-      else {
+      } else {
         setErr(res?.message || "Registration completed, but unable to auto-login. Please try logging in.");
       }
     } catch (error) {
@@ -191,9 +194,7 @@ const PatientRegisterForm = () => {
         const status = error.response.status;
         const data = error.response.data;
         
-        // If status is 200/201, registration likely succeeded but response format is unexpected
         if (status === 200 || status === 201) {
-          // Registration succeeded - redirect to login
           navigate("/login", { 
             state: { message: "Registration successful! Please login with your credentials." } 
           });
@@ -234,11 +235,17 @@ const PatientRegisterForm = () => {
     }
   };
 
-  const ValidationHint = ({ constraints, show }) => {
-    if (!show) return null;
+  const ValidationHint = ({ constraints, show, fieldName }) => {
+    // Only show if:
+    // 1. Field is currently focused AND hasn't been shown before, OR
+    // 2. Field has validation errors after being touched
+    const shouldShow = (show && !constraintsShownOnce[fieldName]) || 
+                       (touched[fieldName] && fieldValidation[fieldName] && !fieldValidation[fieldName].isValid && constraintsShownOnce[fieldName]);
+    
+    if (!shouldShow) return null;
     
     return (
-      <div className="absolute left-0 right-0 top-full mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg shadow-lg z-10 animate-fadeIn">
+      <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg shadow-sm">
         <div className="flex items-start gap-2">
           <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
@@ -350,11 +357,6 @@ const PatientRegisterForm = () => {
                   </svg>
                   Username
                   <span className="text-red-500">*</span>
-                  {form.username && (
-                    <span className="ml-auto text-xs text-gray-500 font-normal">
-                      {form.username.length}/20
-                    </span>
-                  )}
                   <span className="ml-auto">
                     <ValidationIcon fieldName="username" />
                   </span>
@@ -364,7 +366,7 @@ const PatientRegisterForm = () => {
                   name="username"
                   value={form.username}
                   onChange={handleChange}
-                  onFocus={() => setFocusedField('username')}
+                  onFocus={() => handleFocus('username')}
                   onBlur={() => handleBlur('username')}
                   required
                   minLength={3}
@@ -375,6 +377,7 @@ const PatientRegisterForm = () => {
                 />
                 <ValidationHint 
                   show={focusedField === 'username'}
+                  fieldName="username"
                   constraints={FIELD_CONSTRAINTS.username}
                 />
                 <ValidationErrors 
@@ -391,11 +394,6 @@ const PatientRegisterForm = () => {
                   </svg>
                   Full Name
                   <span className="text-red-500">*</span>
-                  {form.full_name && (
-                    <span className="ml-auto text-xs text-gray-500 font-normal">
-                      {form.full_name.length}/20
-                    </span>
-                  )}
                   <span className="ml-auto">
                     <ValidationIcon fieldName="full_name" />
                   </span>
@@ -405,7 +403,7 @@ const PatientRegisterForm = () => {
                   name="full_name"
                   value={form.full_name}
                   onChange={handleChange}
-                  onFocus={() => setFocusedField('full_name')}
+                  onFocus={() => handleFocus('full_name')}
                   onBlur={() => handleBlur('full_name')}
                   required
                   minLength={3}
@@ -416,6 +414,7 @@ const PatientRegisterForm = () => {
                 />
                 <ValidationHint 
                   show={focusedField === 'full_name'}
+                  fieldName="full_name"
                   constraints={FIELD_CONSTRAINTS.full_name}
                 />
                 <ValidationErrors 
@@ -442,7 +441,7 @@ const PatientRegisterForm = () => {
                   name="email"
                   value={form.email}
                   onChange={handleChange}
-                  onFocus={() => setFocusedField('email')}
+                  onFocus={() => handleFocus('email')}
                   onBlur={() => handleBlur('email')}
                   required
                   placeholder="your.email@example.com"
@@ -451,6 +450,7 @@ const PatientRegisterForm = () => {
                 />
                 <ValidationHint 
                   show={focusedField === 'email'}
+                  fieldName="email"
                   constraints={FIELD_CONSTRAINTS.email}
                 />
                 <ValidationErrors 
@@ -467,11 +467,6 @@ const PatientRegisterForm = () => {
                   </svg>
                   Password
                   <span className="text-red-500">*</span>
-                  {form.password && (
-                    <span className="ml-auto text-xs text-gray-500 font-normal">
-                      {form.password.length} characters
-                    </span>
-                  )}
                   <span className="ml-auto">
                     <ValidationIcon fieldName="password" />
                   </span>
@@ -481,7 +476,7 @@ const PatientRegisterForm = () => {
                   name="password"
                   value={form.password}
                   onChange={handleChange}
-                  onFocus={() => setFocusedField('password')}
+                  onFocus={() => handleFocus('password')}
                   onBlur={() => handleBlur('password')}
                   required
                   minLength={6}
@@ -491,6 +486,7 @@ const PatientRegisterForm = () => {
                 />
                 <ValidationHint 
                   show={focusedField === 'password'}
+                  fieldName="password"
                   constraints={FIELD_CONSTRAINTS.password}
                 />
                 <ValidationErrors 
@@ -507,11 +503,6 @@ const PatientRegisterForm = () => {
                   </svg>
                   Contact Number
                   <span className="text-red-500">*</span>
-                  {form.contact_number && (
-                    <span className="ml-auto text-xs text-gray-500 font-normal">
-                      {form.contact_number.length} digits
-                    </span>
-                  )}
                   <span className="ml-auto">
                     <ValidationIcon fieldName="contact_number" />
                   </span>
@@ -521,7 +512,7 @@ const PatientRegisterForm = () => {
                   name="contact_number"
                   value={form.contact_number}
                   onChange={handleChange}
-                  onFocus={() => setFocusedField('contact_number')}
+                  onFocus={() => handleFocus('contact_number')}
                   onBlur={() => handleBlur('contact_number')}
                   required
                   pattern="^[0-9]{10,15}$"
@@ -531,6 +522,7 @@ const PatientRegisterForm = () => {
                 />
                 <ValidationHint 
                   show={focusedField === 'contact_number'}
+                  fieldName="contact_number"
                   constraints={FIELD_CONSTRAINTS.contact_number}
                 />
                 <ValidationErrors 
@@ -555,7 +547,7 @@ const PatientRegisterForm = () => {
                   name="address"
                   value={form.address}
                   onChange={handleChange}
-                  onFocus={() => setFocusedField('address')}
+                  onFocus={() => handleFocus('address')}
                   onBlur={() => handleBlur('address')}
                   required
                   rows="3"
@@ -565,6 +557,7 @@ const PatientRegisterForm = () => {
                 ></textarea>
                 <ValidationHint 
                   show={focusedField === 'address'}
+                  fieldName="address"
                   constraints={FIELD_CONSTRAINTS.address}
                 />
                 <ValidationErrors 
@@ -662,21 +655,6 @@ const PatientRegisterForm = () => {
       </div>
 
       <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-        
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
           25% { transform: translateX(-10px); }

@@ -45,53 +45,53 @@ const DoctorJourney = () => {
   ];
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4">
-      {/* Journey Introduction - Green Theme */}
-      <div className="text-center mb-12 p-8 rounded-2xl bg-gradient-to-r from-green-500 to-teal-600 shadow-lg">
-        <div className="inline-block p-3 bg-white rounded-full shadow-sm mb-4">
-          <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="w-full max-w-5xl mx-auto px-3 sm:px-4">
+      {/* Journey Introduction - Green Theme - Mobile Optimized */}
+      <div className="text-center mb-8 sm:mb-12 p-6 sm:p-8 rounded-xl sm:rounded-2xl bg-gradient-to-r from-green-500 to-teal-600 shadow-lg">
+        <div className="inline-block p-2 sm:p-3 bg-white rounded-full shadow-sm mb-3 sm:mb-4">
+          <svg className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
         </div>
-        <h2 className="text-3xl font-bold mb-3 text-white">Professional Onboarding for Healthcare Providers</h2>
-        <p className="text-lg text-green-100 max-w-2xl mx-auto">Set up your practice, manage your schedule, and deliver quality care through our secure platform.</p>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-3 text-white px-2">Professional Onboarding for Healthcare Providers</h2>
+        <p className="text-base sm:text-lg text-green-100 max-w-2xl mx-auto px-4">Set up your practice, manage your schedule, and deliver quality care through our secure platform.</p>
       </div>
       
-      {/* Timeline */}
-      <div className="space-y-6">
+      {/* Timeline - Mobile Optimized */}
+      <div className="space-y-4 sm:space-y-6">
         {steps.map((story, index) => (
-          <div key={story.id} className="relative bg-white border border-gray-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-300">
-            {/* Story Number Badge - Green Theme */}
-            <div className="absolute -left-4 top-8 w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg z-10">
+          <div key={story.id} className="relative bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 shadow-sm hover:shadow-md transition-all duration-300">
+            {/* Story Number Badge - Mobile Optimized */}
+            <div className="absolute -left-2 sm:-left-4 top-4 sm:top-8 w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-teal-600 text-white rounded-full flex items-center justify-center font-bold text-lg sm:text-xl shadow-lg z-10">
               {index + 1}
             </div>
             
-            {/* Story Header */}
-            <div className="mb-6 ml-10">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="px-3 py-1.5 text-xs font-bold uppercase rounded-lg bg-green-50 text-green-700 border border-green-200">
+            {/* Story Header - Mobile Optimized */}
+            <div className="mb-4 sm:mb-6 ml-10 sm:ml-10">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <span className="px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs font-bold uppercase rounded-lg bg-green-50 text-green-700 border border-green-200 inline-block w-fit">
                   Step {index + 1}
                 </span>
-                <h3 className="text-2xl font-bold text-gray-900">{story.title}</h3>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">{story.title}</h3>
               </div>
               
-              {/* Narrative - Green Theme */}
-              <p className="text-gray-600 text-lg pl-4 border-l-4 border-green-400">
+              {/* Narrative - Mobile Optimized */}
+              <p className="text-gray-600 text-base sm:text-lg pl-3 sm:pl-4 border-l-3 sm:border-l-4 border-green-400 leading-relaxed">
                 {story.narrative}
               </p>
             </div>
             
-            {/* Flow List - Green Theme */}
-            <div className="ml-10">
-              <ul className="space-y-3">
+            {/* Flow List - Mobile Optimized */}
+            <div className="ml-10 sm:ml-10">
+              <ul className="space-y-2.5 sm:space-y-3">
                 {story.flows.map((flow, idx) => (
-                  <li key={idx} className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl hover:from-green-50 hover:to-teal-50 transition-all duration-200 border border-gray-100 hover:border-green-300 group">
-                    <span className="flex-shrink-0 w-8 h-8 bg-white border-2 border-green-400 text-green-700 rounded-full flex items-center justify-center text-sm font-bold shadow-sm group-hover:bg-green-600 group-hover:text-white transition-all duration-200">
+                  <li key={idx} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-br from-gray-50 to-white rounded-lg sm:rounded-xl hover:from-green-50 hover:to-teal-50 transition-all duration-200 border border-gray-100 hover:border-green-300 group">
+                    <span className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-white border-2 border-green-400 text-green-700 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm group-hover:bg-green-600 group-hover:text-white transition-all duration-200 mt-0.5">
                       {flow.step}
                     </span>
-                    <div className="flex-1 pt-0.5">
-                      <strong className="text-gray-900 text-lg block mb-1.5 font-semibold">{flow.view}</strong>
-                      <span className="text-gray-600 leading-relaxed">{flow.note}</span>
+                    <div className="flex-1 pt-0">
+                      <strong className="text-gray-900 text-base sm:text-lg block mb-1 sm:mb-1.5 font-semibold leading-tight">{flow.view}</strong>
+                      <span className="text-gray-600 leading-relaxed text-sm sm:text-base">{flow.note}</span>
                     </div>
                   </li>
                 ))}
@@ -101,18 +101,18 @@ const DoctorJourney = () => {
         ))}
       </div>
 
-      {/* Footer - Green Theme */}
-      <div className="mt-16 pt-8 border-t-2 border-gray-100">
-        <div className="bg-green-50 border border-green-200 p-8 rounded-2xl shadow-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-white rounded-lg shadow-sm">
-              <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+      {/* Footer - Mobile Optimized */}
+      <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t-2 border-gray-100">
+        <div className="bg-green-50 border border-green-200 p-6 sm:p-8 rounded-xl sm:rounded-2xl shadow-sm">
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-5 sm:mb-6">
+            <div className="p-1.5 sm:p-2 bg-white rounded-lg shadow-sm">
+              <svg className="w-7 h-7 sm:w-8 sm:h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
               </svg>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">Why Doctors Choose Us</h3>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Why Doctors Choose Us</h3>
           </div>
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {[
               'Quick credential verification process',
               'Flexible schedule management tools',
@@ -121,11 +121,11 @@ const DoctorJourney = () => {
               'Transparent payment tracking',
               'Secure patient history access'
             ].map((feature, idx) => (
-              <li key={idx} className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100">
-                <svg className="w-6 h-6 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <li key={idx} className="flex items-center gap-2.5 sm:gap-3 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span className="text-gray-800 font-medium">{feature}</span>
+                <span className="text-gray-800 font-medium text-sm sm:text-base">{feature}</span>
               </li>
             ))}
           </ul>
