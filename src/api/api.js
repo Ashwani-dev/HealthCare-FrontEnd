@@ -2,8 +2,8 @@ import axios from "axios";
 import { formatLocalDate } from "../utils/dateTime";
 
 // Get API base URL from environment variable, fallback to deployed backend or relative path
-// const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "https://adjacent-gianina-health-care-2058c736.koyeb.app";
-const baseURL = "http://localhost:8080/api";
+const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "https://adjacent-gianina-health-care-2058c736.koyeb.app";
+// const baseURL = "http://localhost:8080/api";
 
 // Add a request interceptor to include token if present
 axios.interceptors.request.use(
