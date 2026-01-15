@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import DoctorRegisterForm from "./DoctorRegisterForm";
 import PatientRegisterForm from "./PatientRegisterForm";
+import { SEO } from "../common/SEO";
+import { seoConfig } from "../config/seoConfig";
 
 const RegisterForm = () => {
   const [type, setType] = useState("patient");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+    <>
+      <SEO {...seoConfig.auth.register} />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       {/* Role Toggle Bar */}
       <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -55,6 +59,7 @@ const RegisterForm = () => {
         {type === "patient" ? <PatientRegisterForm /> : <DoctorRegisterForm />}
       </div>
     </div>
+    </>
   );
 };
 

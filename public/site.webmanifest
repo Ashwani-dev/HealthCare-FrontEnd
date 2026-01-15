@@ -1,0 +1,68 @@
+{
+    "name": "TheraConnect - Mental Wellness Platform",
+    "short_name": "TheraConnect",
+    "description": "Online mental health therapy platform connecting patients with licensed therapists for secure video consultations",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2563eb",
+    "orientation": "portrait-primary",
+    "icons": [
+      {
+        "src": "/android-chrome-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/android-chrome-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/favicon-32x32.png",
+        "sizes": "32x32",
+        "type": "image/png"
+      },
+      {
+        "src": "/favicon-16x16.png",
+        "sizes": "16x16",
+        "type": "image/png"
+      }
+    ],
+    "categories": ["health", "medical", "lifestyle", "wellness"],
+    "screenshots": [
+      {
+        "src": "/screenshot-wide.png",
+        "sizes": "1280x720",
+        "type": "image/png",
+        "form_factor": "wide",
+        "label": "TheraConnect Dashboard"
+      },
+      {
+        "src": "/screenshot-mobile.png",
+        "sizes": "750x1334",
+        "type": "image/png",
+        "form_factor": "narrow",
+        "label": "TheraConnect Mobile View"
+      }
+    ],
+    "shortcuts": [
+      {
+        "name": "Find Therapist",
+        "short_name": "Find",
+        "description": "Search for therapists",
+        "url": "/find-therapist",
+        "icons": [{ "src": "/icon-search.png", "sizes": "96x96" }]
+      },
+      {
+        "name": "My Dashboard",
+        "short_name": "Dashboard",
+        "description": "View your appointments",
+        "url": "/dashboard",
+        "icons": [{ "src": "/icon-dashboard.png", "sizes": "96x96" }]
+      }
+    ]
+  }

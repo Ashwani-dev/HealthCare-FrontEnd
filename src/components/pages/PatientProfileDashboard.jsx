@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchPatientProfile, updatePatientProfile } from "../../api/api";
+import { SEO } from "../common/SEO";
+import { seoConfig } from "../config/seoConfig";
 
 // SVG Icons
 const UserIcon = () => (
@@ -157,7 +159,9 @@ const PatientProfileDashboard = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto mt-8 lg:mt-12 px-4 lg:px-6 pb-8">
+    <>
+      <SEO {...seoConfig.profile.patient} />
+      <div className="max-w-6xl mx-auto mt-8 lg:mt-12 px-4 lg:px-6 pb-8">
       {/* Toast Notification */}
       {showToast && (success || error) && (
         <div className={`fixed top-4 left-4 right-4 lg:right-auto lg:left-auto lg:right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
@@ -437,6 +441,7 @@ const PatientProfileDashboard = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

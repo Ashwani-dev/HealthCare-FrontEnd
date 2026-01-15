@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { SEO } from "../common/SEO";
+import { seoConfig } from "../config/seoConfig";
 
 const icons = {
   mail: (
@@ -60,7 +62,9 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-10 px-2">
+    <>
+      <SEO {...seoConfig.contact} />
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-10 px-2">
       <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8 md:p-12">
         {/* Page Title & Opening Message */}
         <section className="mb-8 text-center">
@@ -156,6 +160,7 @@ const ContactPage = () => {
         </section>
       </div>
     </div>
+    </>
   );
 };
 

@@ -4,6 +4,8 @@ import BookAppointment from "../patient/BookAppointment";
 import { useAuth } from "../../context/AuthContext";
 import { FaSearch } from "react-icons/fa";
 import { ChevronDownIcon, ChevronUpIcon, XIcon } from "@heroicons/react/solid";
+import { SEO } from "../common/SEO";
+import { seoConfig } from "../config/seoConfig";
 
 const specializations = [
   "Anxiety", "Depression", "Trauma", "Relationships", "Family Counseling", "CBT", "Counseling psychology"
@@ -260,7 +262,9 @@ const FindTherapistPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-10 px-2">
+    <>
+      <SEO {...seoConfig.findTherapist} />
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-10 px-2">
       <div className="max-w-6xl mx-auto">
         {/* Page Header */}
         <header className="mb-8 text-center">
@@ -768,6 +772,7 @@ const FindTherapistPage = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

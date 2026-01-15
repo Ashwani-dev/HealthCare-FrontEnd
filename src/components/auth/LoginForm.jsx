@@ -4,6 +4,8 @@ import { loginUser } from "../../api/api";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../../styles/AuthTypeBubbles.css";
 import styles from "../../styles/RegisterForm.module.css";
+import { SEO } from "../common/SEO";
+import { seoConfig } from "../config/seoConfig";
 
 const LoginForm = () => {
   const { login } = useAuth();
@@ -83,6 +85,8 @@ const LoginForm = () => {
 
   return (
     <>
+      <SEO {...seoConfig.auth.login} />
+      <>
       <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg max-w-md mx-auto p-6">
         <h2 className="text-2xl font-bold text-blue-600 mb-6 text-center">Login</h2>
         <div className="flex justify-center gap-4 mb-4">
@@ -196,6 +200,7 @@ const LoginForm = () => {
           Register
         </button>
       </div>
+    </>
     </>
   );
 };

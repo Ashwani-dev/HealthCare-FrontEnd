@@ -3,6 +3,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import AppointmentsPanel from "../common/AppointmentsPanel";
 import { fetchDoctorAppointments, fetchDoctorAvailability, fetchDoctorProfile, cancelAppointment, rescheduleAppointment } from "../../api/api";
+import { SEO } from "../common/SEO";
+import { seoConfig } from "../config/seoConfig";
 
 
 // DashboardHeader for Doctor
@@ -176,7 +178,9 @@ const DoctorDashboard = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto mt-12 px-6">
+    <>
+      <SEO {...seoConfig.dashboard.doctor} />
+      <div className="max-w-5xl mx-auto mt-12 px-6">
       <DashboardHeader
         doctorLastName={doctorLastName}
         appointmentsTodayCount={appointmentsTodayCount}
@@ -217,6 +221,7 @@ const DoctorDashboard = () => {
       
 
     </div>
+    </>
   );
 };
 

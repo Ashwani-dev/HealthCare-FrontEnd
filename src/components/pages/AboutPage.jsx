@@ -1,4 +1,6 @@
 import React from "react";
+import { SEO } from "../common/SEO";
+import { seoConfig } from "../config/seoConfig";
 
 // Inline SVG icons for values and trust badges
 const icons = {
@@ -23,7 +25,9 @@ const icons = {
 };
 
 const AboutPage = () => (
-  <div className="max-w-3xl mx-auto mt-10 p-0 md:p-6 bg-white rounded shadow text-gray-800 overflow-hidden">
+  <>
+    <SEO {...seoConfig.about} />
+    <div className="max-w-3xl mx-auto mt-10 p-0 md:p-6 bg-white rounded shadow text-gray-800 overflow-hidden">
     {/* Hero Section / Our Why */}
     <section className="relative text-center mb-10">
       {/* Calming, abstract background visual (describe for now) */}
@@ -119,6 +123,7 @@ const AboutPage = () => (
       <a href="/register" className="inline-block bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 text-white font-semibold px-8 py-4 rounded-xl shadow-lg text-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">Get Started</a>
     </section>
   </div>
+  </>
 );
 
 export default AboutPage; 
