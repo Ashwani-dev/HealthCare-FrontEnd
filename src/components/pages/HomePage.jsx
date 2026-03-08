@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "../common/SEO";
 import {seoConfig} from "../config/seoConfig";
+import FeatureCard from "../../utils/FeatureCard";
 
 // Inline SVG icons for steps and benefits
 const icons = {
@@ -128,26 +129,38 @@ const HomePage = () => {
         <section className="max-w-5xl mx-auto py-12 px-4">
           <h2 className="text-2xl font-bold text-blue-700 mb-8 text-center">Why Choose Us?</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="flex flex-col items-center text-center p-6 bg-blue-50 rounded-lg shadow-sm">
-              {icons.therapist}
-              <h3 className="font-semibold text-yellow-700 mt-2 mb-1">Qualified Therapists</h3>
-              <p className="text-gray-600 text-sm">All therapists are licensed, experienced, and carefully vetted for your peace of mind.</p>
-            </div>
-            <div className="flex flex-col items-center text-center p-6 bg-green-50 rounded-lg shadow-sm">
-              {icons.flexible}
-              <h3 className="font-semibold text-green-700 mt-2 mb-1">Flexible & Accessible</h3>
-              <p className="text-gray-600 text-sm">Access support from anywhere, on your schedule—no waiting rooms, no stigma.</p>
-            </div>
-            <div className="flex flex-col items-center text-center p-6 bg-blue-50 rounded-lg shadow-sm">
-              {icons.secure}
-              <h3 className="font-semibold text-blue-700 mt-2 mb-1">Confidential & Secure</h3>
-              <p className="text-gray-600 text-sm">Your privacy is protected with end-to-end encryption and strict confidentiality.</p>
-            </div>
-            <div className="flex flex-col items-center text-center p-6 bg-purple-50 rounded-lg shadow-sm">
-              {icons.match2}
-              <h3 className="font-semibold text-purple-700 mt-2 mb-1">Personalized Matching</h3>
-              <p className="text-gray-600 text-sm">We help you find the right therapist for your unique needs and preferences.</p>
-            </div>
+            <FeatureCard
+              icon={icons.therapist}
+              title="Qualified Therapists"
+              description="All therapists are licensed, experienced, and carefully vetted for your peace of mind."
+              bgColor="bg-blue-50"
+              titleColor="text-yellow-700"
+              rounded="rounded-lg"
+            />
+            <FeatureCard
+              icon={icons.flexible}
+              title="Flexible & Accessible"
+              description="Access support from anywhere, on your schedule—no waiting rooms, no stigma."
+              bgColor="bg-green-50"
+              titleColor="text-green-700"
+              rounded="rounded-lg"
+            />
+            <FeatureCard
+              icon={icons.secure}
+              title="Confidential & Secure"
+              description="Your privacy is protected with end-to-end encryption and strict confidentiality."
+              bgColor="bg-blue-50"
+              titleColor="text-blue-700"
+              rounded="rounded-lg"
+            />
+            <FeatureCard
+              icon={icons.match2}
+              title="Personalized Matching"
+              description="We help you find the right therapist for your unique needs and preferences."
+              bgColor="bg-purple-50"
+              titleColor="text-purple-700"
+              rounded="rounded-lg"
+            />
           </div>
         </section>
 

@@ -233,7 +233,8 @@ const PatientPaymentsPage = () => {
         size: 10,
         sort: "id,desc",
       });
-      const list = data?._embedded?.paymentEntityList || [];
+      
+      const list = data?._embedded?.paymentList || [];
       setPayments(list);
       setPageMeta(data?.page || { number: page, totalPages: 1, size: 10, totalElements: list.length });
     } catch (e) {

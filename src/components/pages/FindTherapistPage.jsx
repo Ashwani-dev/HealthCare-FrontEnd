@@ -663,25 +663,10 @@ const FindTherapistPage = () => {
                       </div>
                     </div>
 
-                    {/* Expandable Details Section */}
+                    {/* Profile Details Section */}
                     <div className="border-t border-gray-200 pt-4">
-                      <button
-                        className="w-full flex items-center justify-between text-left mb-4 hover:bg-gray-50 p-2 rounded transition-colors"
-                        onClick={() => setProfileExpanded(!profileExpanded)}
-                      >
-                        <span className="font-semibold text-gray-900">
-                          {profileExpanded ? "Hide Details" : "View Full Profile"}
-                        </span>
-                        {profileExpanded ? (
-                          <ChevronUpIcon className="w-5 h-5 text-gray-600" />
-                        ) : (
-                          <ChevronDownIcon className="w-5 h-5 text-gray-600" />
-                        )}
-                      </button>
-
-                      {/* Expanded Content */}
-                      {profileExpanded && (
-                        <div className="space-y-4 animate-fadeIn">
+                      {/* Profile Content */}
+                      <div className="space-y-4">
                           {/* Contact Information */}
                           {(profileData.email || profileData.contact_number) && (
                             <div>
@@ -737,7 +722,6 @@ const FindTherapistPage = () => {
                             </div>
                           )}
                         </div>
-                      )}
                     </div>
                   </div>
                 ) : (

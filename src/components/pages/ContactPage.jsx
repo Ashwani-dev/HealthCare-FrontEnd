@@ -64,102 +64,131 @@ const ContactPage = () => {
   return (
     <>
       <SEO {...seoConfig.contact} />
-      <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-10 px-2">
-      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8 md:p-12">
-        {/* Page Title & Opening Message */}
-        <section className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-blue-700 mb-2">We're Here to Help</h1>
-          <p className="text-lg text-gray-700 max-w-2xl mx-auto">Whether you have a question about our services, need technical support, or just want to share feedback, we're here to listen and assist. Your well-being is our priority.</p>
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        {/* Hero Section */}
+        <section className="relative flex flex-col justify-center items-center min-h-[40vh] px-4 pt-16 pb-12 text-center overflow-hidden">
+          <div aria-hidden="true" className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-200 via-blue-50 to-green-100 opacity-80 blur-lg z-0" />
+          <div className="relative z-10 max-w-3xl mx-auto">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-blue-800 mb-4 drop-shadow-lg">We're Here to Help</h1>
+            <p className="text-lg md:text-xl text-gray-700">Whether you have a question about our services, need technical support, or just want to share feedback, we're here to listen and assist. Your well-being is our priority.</p>
+          </div>
         </section>
 
-        {/* Contact Form */}
-        <section className="mb-10">
-          <h2 className="text-xl font-bold text-blue-600 mb-4">Send Us a Message</h2>
+        {/* Contact Form Section */}
+        <section className="max-w-3xl mx-auto py-12 px-4">
+          <h2 className="text-2xl font-bold text-blue-700 mb-6 text-center">Send Us a Message</h2>
           {submitted ? (
-            <div className="bg-green-50 border border-green-200 text-green-700 rounded p-4 text-center font-semibold">
-              Thank you! Your message has been received and we aim to respond within 24 business hours.
+            <div className="bg-white rounded-xl shadow-lg p-8 border border-green-200">
+              <div className="bg-green-50 border-2 border-green-300 text-green-700 rounded-xl p-6 text-center">
+                <svg className="w-16 h-16 mx-auto mb-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 className="text-xl font-bold mb-2">Thank You!</h3>
+                <p className="font-semibold">Your message has been received and we aim to respond within 24 business hours.</p>
+              </div>
             </div>
           ) : (
-            <form className="space-y-4" onSubmit={handleSubmit} autoComplete="off">
-              <div>
-                <label htmlFor="name" className="block text-gray-700 font-medium mb-1">Full Name<span className="text-red-500">*</span></label>
-                <input id="name" name="name" type="text" required value={form.name} onChange={handleChange} className="w-full border border-blue-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" autoComplete="name" />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email Address<span className="text-red-500">*</span></label>
-                <input id="email" name="email" type="email" required value={form.email} onChange={handleChange} className="w-full border border-blue-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" autoComplete="email" />
-              </div>
-              <div>
-                <label htmlFor="subject" className="block text-gray-700 font-medium mb-1">Subject</label>
-                <select id="subject" name="subject" value={form.subject} onChange={handleChange} className="w-full border border-blue-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                  <option>General Inquiry</option>
-                  <option>Technical Support</option>
-                  <option>Billing Question</option>
-                  <option>Therapist Match Query</option>
-                  <option>Feedback</option>
-                  <option>Other</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="message" className="block text-gray-700 font-medium mb-1">Your Message</label>
-                <textarea id="message" name="message" rows={5} value={form.message} onChange={handleChange} className="w-full border border-blue-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-              </div>
-              <div className="text-xs text-gray-500 mt-1">Your information is kept private and confidential. <a href="/privacy" className="underline text-blue-600">Learn more</a>.</div>
-              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">Send Message</button>
-            </form>
+            <div className="bg-white rounded-xl shadow-lg p-8 border border-blue-100">
+              <form className="space-y-5" onSubmit={handleSubmit} autoComplete="off">
+                <div>
+                  <label htmlFor="name" className="block text-gray-700 font-semibold mb-2">Full Name<span className="text-red-500">*</span></label>
+                  <input id="name" name="name" type="text" required value={form.name} onChange={handleChange} className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" autoComplete="name" />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-gray-700 font-semibold mb-2">Email Address<span className="text-red-500">*</span></label>
+                  <input id="email" name="email" type="email" required value={form.email} onChange={handleChange} className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" autoComplete="email" />
+                </div>
+                <div>
+                  <label htmlFor="subject" className="block text-gray-700 font-semibold mb-2">Subject</label>
+                  <select id="subject" name="subject" value={form.subject} onChange={handleChange} className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
+                    <option>General Inquiry</option>
+                    <option>Technical Support</option>
+                    <option>Billing Question</option>
+                    <option>Therapist Match Query</option>
+                    <option>Feedback</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="message" className="block text-gray-700 font-semibold mb-2">Your Message</label>
+                  <textarea id="message" name="message" rows={5} value={form.message} onChange={handleChange} className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" />
+                </div>
+                <div className="text-sm text-gray-600">
+                  Your information is kept private and confidential. <a href="/privacy" className="underline text-blue-600 hover:text-blue-700">Learn more</a>.
+                </div>
+                <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">Send Message</button>
+              </form>
+            </div>
           )}
         </section>
 
         {/* Alternative Contact Methods */}
-        <section className="mb-10">
-          <h2 className="text-lg font-bold text-blue-600 mb-3">Other Ways to Connect</h2>
-          <div className="flex flex-col sm:flex-row sm:justify-center gap-4 text-gray-700 text-base">
-            <div className="flex items-center gap-2">
-              {icons.mail}
-              <a href="mailto:upport@theraconnect.com" className="text-blue-700 underline">support@theraconnect.com</a>
+        <section className="max-w-4xl mx-auto py-12 px-4">
+          <h2 className="text-2xl font-bold text-blue-700 mb-6 text-center">Other Ways to Connect</h2>
+          <div className="bg-white rounded-xl shadow-lg p-8 border border-blue-100">
+            <div className="flex flex-col md:flex-row justify-center items-center gap-8 text-gray-700">
+              <div className="flex items-center gap-3 bg-blue-50 px-6 py-4 rounded-xl">
+                {icons.mail}
+                <a href="mailto:support@theraconnect.com" className="text-blue-700 underline font-semibold hover:text-blue-800">support@theraconnect.com</a>
+              </div>
+              <div className="flex items-center gap-3 bg-green-50 px-6 py-4 rounded-xl">
+                {icons.phone}
+                <a href="tel:+1234567890" className="text-green-700 underline font-semibold hover:text-green-800">+1 234 567 890</a>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              {icons.phone}
-              <a href="tel:+1234567890" className="text-blue-700 underline">+1 234 567 890</a>
+            <div className="text-sm text-gray-600 mt-6 text-center flex items-center justify-center gap-2">
+              {icons.clock}
+              <span>We aim to respond within 24 business hours</span>
             </div>
           </div>
-          <div className="text-xs text-gray-500 mt-2 text-center">We aim to respond within 24 business hours.</div>
         </section>
 
         {/* FAQ Section */}
-        <section className="mb-10">
-          <h2 className="text-lg font-bold text-blue-600 mb-3 flex items-center justify-center gap-2">{icons.faq} Frequently Asked Questions</h2>
-          <div className="space-y-3">
+        <section className="max-w-4xl mx-auto py-12 px-4">
+          <h2 className="text-2xl font-bold text-blue-700 mb-6 text-center flex items-center justify-center gap-2">
+            {icons.faq}
+            Frequently Asked Questions
+          </h2>
+          <div className="space-y-4">
             {faqs.map((faq, idx) => (
-              <div key={idx} className="border border-blue-100 rounded-lg bg-blue-50">
+              <div key={idx} className="bg-white rounded-xl shadow-sm border border-blue-100 overflow-hidden">
                 <button
-                  className="w-full flex justify-between items-center px-4 py-3 text-left font-medium text-blue-800 focus:outline-none focus:ring-0 focus:border-transparent"
+                  className="w-full flex justify-between items-center px-6 py-4 text-left font-semibold text-blue-800 hover:bg-blue-50 transition-colors focus:outline-none"
                   onClick={() => setFaqOpen(faqOpen === idx ? null : idx)}
                   aria-expanded={faqOpen === idx}
                   aria-controls={`faq-panel-${idx}`}
                 >
-                  <span>{faq.q}</span>
-                  <span className="ml-2 text-xl">{faqOpen === idx ? "-" : "+"}</span>
+                  <span className="text-base">{faq.q}</span>
+                  <span className="ml-4 text-2xl font-bold text-blue-600">{faqOpen === idx ? "−" : "+"}</span>
                 </button>
                 {faqOpen === idx && (
-                  <div id={`faq-panel-${idx}`} className="px-4 pb-4 text-gray-700 text-sm animate-fadeIn">
-                    {faq.a}
+                  <div id={`faq-panel-${idx}`} className="px-6 pb-4 text-gray-700 bg-blue-50 border-t border-blue-100 animate-fadeIn">
+                    <p className="pt-4">{faq.a}</p>
                   </div>
                 )}
               </div>
             ))}
           </div>
-          <div className="text-xs text-gray-500 mt-2 text-center">Didn't find your answer? Please use the contact form above and we'll be happy to help.</div>
+          <div className="text-sm text-gray-600 mt-6 text-center bg-white rounded-xl p-4 shadow-sm border border-blue-100">
+            Didn't find your answer? Please use the contact form above and we'll be happy to help.
+          </div>
         </section>
 
         {/* Support Hours */}
-        <section className="mb-2 text-center">
-          <h2 className="text-lg font-bold text-blue-600 mb-1 flex items-center justify-center gap-2">{icons.clock} Support Hours</h2>
-          <div className="text-gray-700">Monday - Friday: 9:00 AM - 5:00 PM IST</div>
-          <div className="text-xs text-gray-500 mt-1">Limited support outside these hours.</div>
+        <section className="max-w-3xl mx-auto py-8 px-4 mb-12">
+          <div className="bg-white rounded-xl shadow-lg p-8 border border-purple-100 text-center">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2" />
+              </svg>
+              <h2 className="text-xl font-bold text-purple-700">Support Hours</h2>
+            </div>
+            <div className="text-lg text-gray-700 font-semibold mb-1">Monday - Friday: 9:00 AM - 5:00 PM IST</div>
+            <div className="text-sm text-gray-600">Limited support outside these hours</div>
+          </div>
         </section>
       </div>
-    </div>
     </>
   );
 };

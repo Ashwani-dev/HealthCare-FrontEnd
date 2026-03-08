@@ -88,8 +88,8 @@ const DoctorProfileDashboard = () => {
       .then(data => {
         setProfile(data);
         setForm(data);
-        setLoading(false);
-      })
+        setLoading(false);        // Cache profile data including totpEnabled status
+        localStorage.setItem('profileData', JSON.stringify(data));      })
       .catch(() => {
         setError("Failed to load profile.");
         setLoading(false);
@@ -122,8 +122,11 @@ const DoctorProfileDashboard = () => {
         medical_experience: form.medical_experience,
         license_number: form.license_number
       });
-      setProfile({ ...profile, ...updated });
+      const updatedProfile = { ...profile, ...updated };
+      setProfile(updatedProfile);
       setForm({ ...form, ...updated });
+      // Update cached profile data
+      localStorage.setItem('profileData', JSON.stringify(updatedProfile));
       setIsEditing(false);
       showToastMessage("Profile updated successfully!", "success");
     } catch (err) {

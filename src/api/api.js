@@ -2,8 +2,7 @@ import axios from "axios";
 import { formatLocalDate } from "../utils/dateTime";
 
 // Get API base URL from environment variable, fallback to deployed backend or relative path
-const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "https://adjacent-gianina-health-care-2058c736.koyeb.app";
-// const baseURL = "http://localhost:8080/api";
+const baseURL = import.meta.env.VITE_BACKEND_BASE_URL;
 
 // Add a request interceptor to include token if present
 axios.interceptors.request.use(
@@ -43,23 +42,21 @@ export const registerUser = async (data, type) => {
 };
 
 /**
- * Authenticate user login
+ * Authenticate user login with password
  * @param {string} email - User's email address
  * @param {string} password - User's password
  * @param {string} type - User type: 'doctor' or 'patient'
  * @returns {Promise<Object>} Login response with user data and token
- * @throws {Error} If user type is invalid
  */
 export const loginUser = async (email, password, type) => {
-  let url;
-  if (type === "doctor") {
-    url = `${baseURL}/auth/doctor/login`;
-  } else if (type === "patient") {
-    url = `${baseURL}/auth/patient/login`;
-  } else {
-    throw new Error("Invalid user type for login");
-  }
-  const res = await axios.post(url, { email, password });
+  const userType = type.toUpperCase(); // Convert to 'PATIENT' or 'DOCTOR'
+  
+  const res = await axios.post(
+    `${baseURL}/auth/login/password`,
+    { email, password },
+    { params: { userType } }
+  );
+  
   return res.data;
 };
 
@@ -97,6 +94,56 @@ export const resetPassword = async (token, newPassword) => {
     newPassword
   });
   return response.data;
+};
+
+// ================= TOTP Authentication API =================
+
+/**
+ * Login with TOTP code (authenticator app)
+ * @param {string} email - User's email address
+ * @param {string} code - 6-digit TOTP code from authenticator app
+ * @param {string} userType - User type: 'PATIENT' or 'DOCTOR' (uppercase)
+ * @returns {Promise<Object>} Login response with token, role, userId, and loginMethod
+ * @throws {Error} If TOTP not enabled or invalid code
+ */
+export const loginWithTOTP = async (email, code, userType) => {
+  const url = `${baseURL}/auth/login/totp?userType=${userType}`;
+  const res = await axios.post(url, { email, code });
+  return res.data;
+};
+
+/**
+ * Setup TOTP for current user (generate QR code)
+ * @returns {Promise<Object>} Object with qrCodeImage (base64) and secret
+ * @throws {Error} If TOTP is already enabled
+ */
+export const setupTOTP = async () => {
+  const url = `${baseURL}/auth/totp/setup`;
+  const res = await axios.post(url);
+  return res.data;
+};
+
+/**
+ * Confirm TOTP setup by verifying code from authenticator app
+ * @param {string} secret - TOTP secret from setup
+ * @param {string} code - 6-digit code from authenticator app
+ * @returns {Promise<Object>} Success message and loginMethod
+ * @throws {Error} If code is invalid
+ */
+export const confirmTOTP = async (secret, code) => {
+  const url = `${baseURL}/auth/totp/confirm`;
+  const res = await axios.post(url, { secret, code });
+  return res.data;
+};
+
+/**
+ * Disable TOTP for current user
+ * @returns {Promise<Object>} Success message and loginMethod (PASSWORD)
+ */
+export const disableTOTP = async () => {
+  const url = `${baseURL}/auth/totp/disable`;
+  const res = await axios.post(url);
+  return res.data;
 };
 
 // ================= Appointment API =================

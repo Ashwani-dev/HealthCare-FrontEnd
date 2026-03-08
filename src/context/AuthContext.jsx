@@ -3,7 +3,7 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // { type: 'doctor' | 'patient', ... }
+  const [user, setUser] = useState(null); // { role, userId, token, loginMethod, ... }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,9 +16,15 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+    // userData should include: role, userId, token, and optionally loginMethod
+    const userWithDefaults = {
+      ...userData,
+      loginMethod: userData.loginMethod || 'PASSWORD' // Default to PASSWORD if not specified
+    };
+    setUser(userWithDefaults);
+    localStorage.setItem("user", JSON.stringify(userWithDefaults));
   };
+  
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");

@@ -25,6 +25,7 @@ const PatientPaymentsPage = lazy(() => import("./components/pages/PatientPayment
 const ForgotPasswordPage = lazy(() => import("./components/auth/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./components/auth/ResetPasswordPage"));
 const UserJourneyPage = lazy(() => import("./components/pages/UserJourneyPage"));
+const SecuritySettings = lazy(() => import("./components/pages/SecuritySettings"));
 
 // Loading Spinner Component
 const LoadingSpinner = () => (
@@ -189,6 +190,14 @@ const AppContent = () => {
             element={
               <PrivateRoute>
                 <ProfilePage />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/security" 
+            element={
+              <PrivateRoute>
+                <SecuritySettings />
               </PrivateRoute>
             } 
           />
