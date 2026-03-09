@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { SEO } from "../common/SEO";
 import { seoConfig } from "../config/seoConfig";
+import { Button, Input, TextArea, Select, Alert } from "../ui";
 
 const icons = {
   mail: (
@@ -78,45 +79,82 @@ const ContactPage = () => {
         <section className="max-w-3xl mx-auto py-12 px-4">
           <h2 className="text-2xl font-bold text-blue-700 mb-6 text-center">Send Us a Message</h2>
           {submitted ? (
-            <div className="bg-white rounded-xl shadow-lg p-8 border border-green-200">
-              <div className="bg-green-50 border-2 border-green-300 text-green-700 rounded-xl p-6 text-center">
-                <svg className="w-16 h-16 mx-auto mb-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 className="text-xl font-bold mb-2">Thank You!</h3>
-                <p className="font-semibold">Your message has been received and we aim to respond within 24 business hours.</p>
-              </div>
-            </div>
+            <Alert
+              type="success"
+              title="Thank You!"
+              message="Your message has been received and we aim to respond within 24 business hours."
+              className="bg-white rounded-xl shadow-lg p-8 border border-green-200"
+            >
+              <svg className="w-16 h-16 mx-auto mb-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </Alert>
           ) : (
             <div className="bg-white rounded-xl shadow-lg p-8 border border-blue-100">
               <form className="space-y-5" onSubmit={handleSubmit} autoComplete="off">
-                <div>
-                  <label htmlFor="name" className="block text-gray-700 font-semibold mb-2">Full Name<span className="text-red-500">*</span></label>
-                  <input id="name" name="name" type="text" required value={form.name} onChange={handleChange} className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" autoComplete="name" />
-                </div>
-                <div>
-                  <label htmlFor="email" className="block text-gray-700 font-semibold mb-2">Email Address<span className="text-red-500">*</span></label>
-                  <input id="email" name="email" type="email" required value={form.email} onChange={handleChange} className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" autoComplete="email" />
-                </div>
-                <div>
-                  <label htmlFor="subject" className="block text-gray-700 font-semibold mb-2">Subject</label>
-                  <select id="subject" name="subject" value={form.subject} onChange={handleChange} className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
-                    <option>General Inquiry</option>
-                    <option>Technical Support</option>
-                    <option>Billing Question</option>
-                    <option>Therapist Match Query</option>
-                    <option>Feedback</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="message" className="block text-gray-700 font-semibold mb-2">Your Message</label>
-                  <textarea id="message" name="message" rows={5} value={form.message} onChange={handleChange} className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" />
-                </div>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  label="Full Name"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                  autoComplete="name"
+                  className=""
+                />
+                
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  label="Email Address"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                  autoComplete="email"
+                  className=""
+                />
+                
+                <Select
+                  id="subject"
+                  name="subject"
+                  label="Subject"
+                  value={form.subject}
+                  onChange={handleChange}
+                  options={[
+                    'General Inquiry',
+                    'Technical Support',
+                    'Billing Question',
+                    'Therapist Match Query',
+                    'Feedback',
+                    'Other'
+                  ]}
+                  className=""
+                />
+                
+                <TextArea
+                  id="message"
+                  name="message"
+                  label="Your Message"
+                  value={form.message}
+                  onChange={handleChange}
+                  rows={5}
+                  className=""
+                />
+                
                 <div className="text-sm text-gray-600">
                   Your information is kept private and confidential. <a href="/privacy" className="underline text-blue-600 hover:text-blue-700">Learn more</a>.
                 </div>
-                <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">Send Message</button>
+                
+                <Button 
+                  type="submit" 
+                  variant="gradient" 
+                  size="lg" 
+                  fullWidth
+                >
+                  Send Message
+                </Button>
               </form>
             </div>
           )}

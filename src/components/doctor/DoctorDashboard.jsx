@@ -5,6 +5,7 @@ import AppointmentsPanel from "../common/AppointmentsPanel";
 import { fetchDoctorAppointments, fetchDoctorAvailability, fetchDoctorProfile, cancelAppointment, rescheduleAppointment } from "../../api/api";
 import { SEO } from "../common/SEO";
 import { seoConfig } from "../config/seoConfig";
+import { Spinner } from "../ui";
 
 
 // DashboardHeader for Doctor
@@ -109,7 +110,11 @@ const DoctorDashboard = () => {
     ? availability.filter((slot) => slot.available).length
     : 0;
     
-  if (loading) return <div className="flex justify-center items-center h-64">Loading dashboard...</div>;
+  if (loading) return (
+    <div className="flex justify-center items-center h-64">
+      <Spinner size="lg" text="Loading dashboard..." />
+    </div>
+  );
 
   const handlePageChange = async (newPage) => {
     setCurrentPage(newPage);

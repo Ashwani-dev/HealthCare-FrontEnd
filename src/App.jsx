@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/common/Navbar";
+import { LoadingSpinner } from "./components/ui";
 
 // Lazy load all page components for better performance
 const HomePage = lazy(() => import("./components/pages/HomePage"));
@@ -17,35 +18,22 @@ const DoctorProfileDashboard = lazy(() => import("./components/pages/DoctorProfi
 const FindTherapistPage = lazy(() => import("./components/pages/FindTherapistPage"));
 const VideoCallPreviewPage = lazy(() => import("./components/pages/VideoCallPreviewPage"));
 const VideoCallPage = lazy(() => import("./components/pages/VideoCallPage"));
-const PaymentSuccess = lazy(() => import("./components/payment/PaymentSuccess"));
-const PaymentFailure = lazy(() => import("./components/payment/PaymentFailure"));
-const PaymentPending = lazy(() => import("./components/payment/PaymentPending"));
-const PaymentStatus = lazy(() => import("./components/payment/PaymentStatus"));
+const PaymentSuccess = lazy(() => import("./components/payments/PaymentSuccess"));
+const PaymentFailure = lazy(() => import("./components/payments/PaymentFailure"));
+const PaymentPending = lazy(() => import("./components/payments/PaymentPending"));
+const PaymentStatus = lazy(() => import("./components/payments/PaymentStatus"));
 const PatientPaymentsPage = lazy(() => import("./components/pages/PatientPaymentsPage"));
 const ForgotPasswordPage = lazy(() => import("./components/auth/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./components/auth/ResetPasswordPage"));
 const UserJourneyPage = lazy(() => import("./components/pages/UserJourneyPage"));
 const SecuritySettings = lazy(() => import("./components/pages/SecuritySettings"));
 
-// Loading Spinner Component
-const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100">
-    <div className="flex flex-col items-center gap-4">
-      <div className="relative">
-        <div className="w-16 h-16 border-4 border-blue-200 rounded-full"></div>
-        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
-      </div>
-      <p className="text-gray-600 font-medium text-lg">Loading...</p>
-    </div>
-  </div>
-);
-
 // Dashboard Component with loading state
 const Dashboard = () => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullScreen />;
   }
   
   if (!user) {
@@ -61,7 +49,7 @@ const ProfilePage = () => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullScreen />;
   }
   
   if (!user) {
@@ -77,7 +65,7 @@ const DoctorAvailability = () => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullScreen />;
   }
   
   if (!user) {
@@ -96,7 +84,7 @@ const ProfileProtectedPatientOnly = () => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullScreen />;
   }
   
   if (!user) {
@@ -127,7 +115,7 @@ const PublicOnlyRoute = ({ children }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullScreen />;
   }
   
   if (user) {
@@ -142,7 +130,7 @@ const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullScreen />;
   }
   
   if (!user) {
@@ -157,7 +145,7 @@ const AppContent = () => {
   return (
     <Router>
       <ConditionalNavbar />
-      <Suspense fallback={<LoadingSpinner />}>
+      <Suspense fallback={<LoadingSpinner fullScreen />}>
         <Routes>
           {/* Public Routes - Accessible to everyone */}
           <Route path="/" element={<HomePage />} />

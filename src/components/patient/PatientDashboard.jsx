@@ -5,6 +5,7 @@ import { fetchPatientAppointments, fetchPatientProfile, cancelAppointment, resch
 import { useNavigate } from "react-router-dom";
 import { SEO } from "../common/SEO";
 import { seoConfig } from "../config/seoConfig";
+import { Spinner } from "../ui";
 
 
 // Refined dashboard header with calming colors and better spacing
@@ -198,7 +199,9 @@ const PatientDashboard = () => {
       <SEO {...seoConfig.dashboard.patient} />
       <div className="max-w-5xl mx-auto mt-12 px-6">
       {loading ? (
-        <div className="flex justify-center items-center h-64 text-gray-600 text-lg">Loading your dashboard...</div>
+        <div className="flex justify-center items-center h-64">
+          <Spinner size="lg" text="Loading your dashboard..." />
+        </div>
       ) : (
         <>
           <DashboardHeader patientName={profile?.full_name || 'User'} appointments={appointments} />

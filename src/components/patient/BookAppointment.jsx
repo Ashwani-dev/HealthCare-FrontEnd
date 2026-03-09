@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { fetchDoctorAvailability, fetchDoctorAvailableSlots, fetchPatientProfile, createAppointmentHold, initiatePaymentWithHold, getPaymentStatus } from "../../api/api";
-import { cashfreeCheckout } from "../payment/cashfree";
+import { cashfreeCheckout } from "../payments/cashfree";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Button, TextArea, Spinner } from "../ui";
 
 
 const weekdayMap = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
@@ -244,16 +245,16 @@ const BookAppointment = ({ doctor, patientId, onBooked, onCancel }) => {
           </>
         )}
         {/* Reason text box */}
-        <label className="block mb-2 mt-2">Reason for Treatment:</label>
-        <textarea
-          className="mb-2 w-full border p-2"
+        <TextArea
+          label="Reason for Treatment"
+          name="reason"
           value={reason}
           onChange={e => setReason(e.target.value)}
           placeholder="Describe your reason for seeking treatment..."
           rows={3}
         />
         <div className="flex gap-2 mt-2">
-          <button type="button" className="bg-gray-400 text-white px-4 py-1 rounded" onClick={onCancel}>Cancel</button>
+          <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
         </div>
         {msg && <div className="text-green-600 mt-2">{msg}</div>}
         {error && <div className="text-red-600 mt-2">{error}</div>}
@@ -274,14 +275,17 @@ const BookAppointment = ({ doctor, patientId, onBooked, onCancel }) => {
         
         {/* Pay now and book button */}
         <div className="mt-4 pt-4 border-t border-gray-200">
-          <button
+          <Button
             type="button"
             onClick={handlePayNowAndBook}
-            disabled={paymentLoading || !selectedDate || !selectedTime || !reason}
-            className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!selectedDate || !selectedTime || !reason}
+            variant="success"
+            size="lg"
+            fullWidth
+            loading={paymentLoading}
           >
-            {paymentLoading ? 'Processing...' : 'Pay now and book'}
-          </button>
+            Pay now and book
+          </Button>
           
           <p className="text-sm text-gray-600 mt-2 text-center">
             Consultation Fee: ₹500
@@ -291,14 +295,18 @@ const BookAppointment = ({ doctor, patientId, onBooked, onCancel }) => {
           {paymentInitiated && (
             <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
               <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                <span className="text-sm text-blue-700">
-                  Payment in progress... Your appointment slot is on hold.
-                </span>
+                <div className="mr-2">
+                  <Spinner size="sm" color="primary" />
+                </div>
+                <div>
+                  <span className="text-sm text-blue-700">
+                    Payment in progress... Your appointment slot is on hold.
+                  </span>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Please complete the payment to confirm your booking.
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-blue-600 mt-1">
-                Please complete the payment to confirm your booking.
-              </p>
             </div>
           )}
         </div>

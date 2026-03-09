@@ -1,7 +1,7 @@
 import React from "react";
 import { SEO } from "../common/SEO";
 import { seoConfig } from "../config/seoConfig";
-import FeatureCard from "../../utils/FeatureCard";
+import FeatureCard from "../ui/FeatureCard";
 
 // Inline SVG icons for values and trust badges
 const icons = {

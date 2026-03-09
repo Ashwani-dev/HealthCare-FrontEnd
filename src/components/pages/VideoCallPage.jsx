@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import VideoCall from '../common/VideoCall';
+import VideoCall from '../video/VideoCall';
 
 const VideoCallPage = () => {
   const { appointmentId, userType, userId } = useParams();

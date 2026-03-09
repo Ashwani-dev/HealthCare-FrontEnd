@@ -3,7 +3,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "../common/SEO";
 import {seoConfig} from "../config/seoConfig";
-import FeatureCard from "../../utils/FeatureCard";
+import FeatureCard from "../ui/FeatureCard";
+import { Button } from "../ui";
 
 // Inline SVG icons for steps and benefits
 const icons = {
@@ -87,18 +88,20 @@ const HomePage = () => {
             <h1 className="text-4xl md:text-5xl font-extrabold text-blue-800 mb-4 drop-shadow-lg">Your Mental Wellness Journey Starts Here</h1>
             <p className="text-lg md:text-xl text-gray-700 mb-8">Seamlessly connect with licensed mental health therapists for personalized, confidential support—whenever you need it.</p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
-              <button
+              <Button
                 onClick={handleFindTherapist}
-                className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg text-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                variant="primary"
+                size="lg"
               >
                 Find a Therapist
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleLearnMore}
-                className="inline-block bg-white hover:bg-blue-50 text-blue-700 font-semibold px-8 py-4 rounded-xl shadow text-lg border border-blue-200 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                variant="secondary"
+                size="lg"
               >
                 Learn How It Works
-              </button>
+              </Button>
             </div>
           </div>
         </section>
@@ -182,12 +185,13 @@ const HomePage = () => {
         <section className="w-full py-16 bg-gradient-to-r from-blue-100 via-green-50 to-pink-50 text-center">
           <h2 className="text-3xl font-bold text-blue-800 mb-4">Take the First Step Towards a Brighter Tomorrow</h2>
           <p className="text-lg text-gray-700 mb-8">Your journey to healing and hope begins with a single click. Connect with a caring therapist today.</p>
-          <button
+          <Button
             onClick={handleStartHealing}
-            className="inline-block bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 text-white font-semibold px-10 py-5 rounded-2xl shadow-xl text-xl transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+            variant="gradient"
+            size="lg"
           >
             Start Healing Now
-          </button>
+          </Button>
         </section>
       </div>
     </>

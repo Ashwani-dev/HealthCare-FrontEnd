@@ -6,6 +6,7 @@ import "../../styles/AuthTypeBubbles.css";
 import styles from "../../styles/RegisterForm.module.css";
 import { SEO } from "../common/SEO";
 import { seoConfig } from "../config/seoConfig";
+import { Button, Input, Alert } from "../ui";
 
 const LoginForm = () => {
   const { login } = useAuth();
@@ -168,12 +169,10 @@ const LoginForm = () => {
         </div>
 
         {/* Email Field (always shown) */}
-        <input
+        <Input
           type="email"
+          name="email"
           placeholder="Email"
-          className={`w-full p-3 mb-3 border rounded focus:border-blue-500 ${
-            loading ? 'border-gray-200 bg-gray-50' : 'border-gray-300'
-          }`}
           value={email}
           onChange={e => {
             setEmail(e.target.value);
@@ -185,12 +184,10 @@ const LoginForm = () => {
 
         {/* Password Field (shown only for password login) */}
         {loginMethod === "password" && (
-          <input
+          <Input
             type="password"
+            name="password"
             placeholder="Password"
-            className={`w-full p-3 mb-3 border rounded focus:border-blue-500 ${
-              loading ? 'border-gray-200 bg-gray-50' : 'border-gray-300'
-            }`}
             value={password}
             onChange={e => {
               setPassword(e.target.value);
@@ -204,12 +201,10 @@ const LoginForm = () => {
         {/* TOTP Code Field (shown only for TOTP login) */}
         {loginMethod === "totp" && (
           <div>
-            <input
+            <Input
               type="text"
+              name="totpCode"
               placeholder="000000"
-              className={`w-full p-3 mb-2 border rounded text-center text-2xl tracking-widest font-mono focus:border-blue-500 ${
-                loading ? 'border-gray-200 bg-gray-50' : 'border-gray-300'
-              }`}
               value={totpCode}
               onChange={e => {
                 const value = e.target.value.replace(/\D/g, ''); // Only digits
@@ -219,7 +214,6 @@ const LoginForm = () => {
                 }
               }}
               maxLength="6"
-              pattern="[0-9]{6}"
               required
               disabled={loading}
             />
@@ -232,62 +226,34 @@ const LoginForm = () => {
         {/* Forgot Password Link (only for password login) */}
         {loginMethod === "password" && (
           <div className="flex justify-end mt-2">
-            <button
+            <Button
               type="button"
               onClick={() => navigate("/forgot-password")}
-              className="text-sm text-blue-600 font-semibold hover:text-blue-700 hover:underline transition-colors duration-200"
+              variant="link"
+              size="sm"
             >
               Forgot Password?
-            </button>
+            </Button>
           </div>
         )}
 
         {/* Success Message */}
-        {success && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span className="text-green-700 text-sm font-medium">{success}</span>
-            </div>
-          </div>
-        )}
+        {success && <Alert type="success" message={success} />}
 
         {/* Error Message */}
-        {err && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              <span className="text-red-700 text-sm font-medium">{err}</span>
-            </div>
-          </div>
-        )}
+        {err && <Alert type="error" message={err} />}
 
         {/* Submit Button */}
-        <button 
+        <Button 
           type="submit" 
-          className={`w-full font-semibold py-3 rounded transition ${
-            loading 
-              ? 'bg-gray-400 cursor-not-allowed' 
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
-          }`}
+          variant="primary"
+          size="lg"
+          fullWidth
+          loading={loading}
           disabled={loading}
         >
-          {loading ? (
-            <div className="flex items-center justify-center">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Logging in...
-            </div>
-          ) : (
-            'Login'
-          )}
-        </button>
+          Login
+        </Button>
 
         {/* Help Text for TOTP */}
         {loginMethod === "totp" && (
@@ -306,13 +272,14 @@ const LoginForm = () => {
       </form>
       <div className="flex items-center justify-center mt-6 ">
         <span className="text-gray-700 mr-2">Don't have an account?</span>
-        <button
+        <Button
           type="button"
-          className="text-blue-600 font-semibold hover:underline focus:outline-none"
+          variant="link"
+          size="sm"
           onClick={() => navigate("/register")}
         >
           Register
-        </button>
+        </Button>
       </div>
     </>
     </>

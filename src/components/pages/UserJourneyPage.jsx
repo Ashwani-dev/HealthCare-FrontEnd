@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { SEO } from "../common/SEO";
 import { seoConfig } from "../config/seoConfig";
-import DoctorJourney from '../userJourney/DoctorJourney';
-import PatientJourney from '../userJourney/PatientJourney';
+import DoctorJourney from '../../userJourney/DoctorJourney';
+import PatientJourney from '../../userJourney/PatientJourney';
 
 const UserJourneyPage = () => {
   const [view, setView] = useState('patient');

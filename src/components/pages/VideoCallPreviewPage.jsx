@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { Spinner } from '../ui';
 
 const VideoCallPreviewPage = () => {
   const { appointmentId, userType } = useParams();
@@ -99,10 +100,7 @@ const VideoCallPreviewPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#EFF6FF] flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#2563EB] mb-4"></div>
-          <p className="text-lg text-[#1E293B]">Loading...</p>
-        </div>
+        <Spinner size="lg" text="Loading..." />
       </div>
     );
   }
