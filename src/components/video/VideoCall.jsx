@@ -13,7 +13,7 @@ import CallEndIcon from "@mui/icons-material/CallEnd";
 import { useTheme } from "@mui/material/styles";
 import { createVideoSession, getVideoSession, getVideoToken, endVideoSession, fetchDoctorProfile, fetchPatientProfile } from "../../api/api";
 import { forceStopAllMediaTracks } from "../../utils/mediaUtils";
-import Logo from "./Logo";
+import Logo from "../common/Logo";
 
 /**
  * VideoCall component for telehealth video sessions.
