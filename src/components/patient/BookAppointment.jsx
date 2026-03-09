@@ -27,14 +27,20 @@ const BookAppointment = ({ doctor, patientId, onBooked, onCancel }) => {
   useEffect(() => {
     if (doctor?.id) {
       setLoading(true);
-      fetchDoctorAvailability(doctor.id).then((data) => {
-        const avail = data.filter(a => a.available);
-        setAvailability(avail);
-        // Get available weekdays as numbers (0=Sun, 1=Mon...)
-        const weekdays = Array.from(new Set(avail.map(slot => weekdayMap.indexOf(slot.dayOfWeek)))).filter(i => i !== -1);
-        setAvailableWeekdays(weekdays);
-        setLoading(false);
-      });
+      fetchDoctorAvailability(doctor.id)
+        .then((data) => {
+          const avail = data.filter(a => a.isAvailable);
+          setAvailability(avail);
+          // Get available weekdays as numbers (0=Sun, 1=Mon...)
+          const weekdays = Array.from(new Set(avail.map(slot => weekdayMap.indexOf(slot.dayOfWeek)))).filter(i => i !== -1);
+          setAvailableWeekdays(weekdays);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error('Error fetching availability:', error);
+          setError('Failed to load doctor availability');
+          setLoading(false);
+        });
     }
   }, [doctor]);
 

@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/common/Navbar";
 
@@ -110,6 +110,18 @@ const ProfileProtectedPatientOnly = () => {
   return <PatientPaymentsPage />;
 };
 
+// Conditional Navbar - Hide on video call pages
+const ConditionalNavbar = () => {
+  const location = useLocation();
+  const isVideoCallPage = location.pathname.includes('/video-call') || location.pathname.includes('/video-preview');
+  
+  if (isVideoCallPage) {
+    return null;
+  }
+  
+  return <Navbar />;
+};
+
 // Protected Route Component for Login/Register (redirects if already logged in)
 const PublicOnlyRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -144,7 +156,7 @@ const PrivateRoute = ({ children }) => {
 const AppContent = () => {
   return (
     <Router>
-      <Navbar />
+      <ConditionalNavbar />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           {/* Public Routes - Accessible to everyone */}
