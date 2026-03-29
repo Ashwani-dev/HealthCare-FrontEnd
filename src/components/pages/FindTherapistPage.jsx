@@ -275,7 +275,7 @@ const FindTherapistPage = () => {
           </p>
           {/* Enhanced Search Bar with Icon and Suggestions */}
           <div className="flex flex-col items-center w-full max-w-xl mx-auto">
-            <div className="relative w-full flex">
+            <div className="relative w-full flex gap-3">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                 <FaSearch />
               </span>
