@@ -2,51 +2,18 @@ import React, { useEffect, useState } from "react";
 import { fetchPatientProfile, updatePatientProfile } from "../../api/api";
 import { SEO } from "../common/SEO";
 import { seoConfig } from "../config/seoConfig";
-import { Spinner } from "../ui";
-
-// SVG Icons
-const UserIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-  </svg>
-);
-
-const EditIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-  </svg>
-);
-
-const MailIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-  </svg>
-);
-
-const PhoneIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-  </svg>
-);
-
-const LocationIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-);
-
-const CalendarIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-  </svg>
-);
+import { getAvatarUrl, getInitials } from "../../utils/avatar";
+import { useProfileImageUpload } from "../../hooks/useProfileImageUpload";
+import { 
+  Spinner, 
+  UserIcon, 
+  EditIcon, 
+  CheckIcon, 
+  MailIcon, 
+  PhoneIcon, 
+  LocationIcon, 
+  CalendarIcon 
+} from "../ui";
 
 const PatientProfileDashboard = () => {
   const [profile, setProfile] = useState(null);
@@ -57,6 +24,20 @@ const PatientProfileDashboard = () => {
   const [updating, setUpdating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const {
+    imageUploading,
+    fileInputRef,
+    handleImageUpload,
+    handleRemoveImage,
+    triggerFileInput
+  } = useProfileImageUpload({
+    role: "patient",
+    profile,
+    form,
+    setProfile,
+    setForm,
+    showToast: showToastMessage
+  });
 
   useEffect(() => {
     fetchPatientProfile()
@@ -73,7 +54,7 @@ const PatientProfileDashboard = () => {
       });
   }, []);
 
-  const showToastMessage = (message, type = "success") => {
+  function showToastMessage(message, type = "success") {
     if (type === "success") {
       setSuccess(message);
       setError("");
@@ -83,7 +64,7 @@ const PatientProfileDashboard = () => {
     }
     setShowToast(true);
     setTimeout(() => setShowToast(false), 4000);
-  };
+  }
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -105,7 +86,7 @@ const PatientProfileDashboard = () => {
       localStorage.setItem('profileData', JSON.stringify(updatedProfile));
       setIsEditing(false);
       showToastMessage("Profile updated successfully!", "success");
-    } catch (err) {
+    } catch {
       showToastMessage("Failed to update profile. Please try again.", "error");
     } finally {
       setUpdating(false);
@@ -190,18 +171,78 @@ const PatientProfileDashboard = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
         {/* Profile Header */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 lg:px-8 py-8 lg:py-10">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            className="hidden"
+            accept="image/*"
+          />
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center mb-4 lg:mb-0">
-              <div className="w-16 h-16 lg:w-20 lg:h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
-                <UserIcon className="w-8 h-8 lg:w-10 lg:h-10 text-blue-600" />
+              <div className="relative group">
+                <div className="w-16 h-16 lg:w-20 lg:h-20 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden border-2 border-white relative">
+                  {imageUploading && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
+                      <Spinner size="sm" color="white" />
+                    </div>
+                  )}
+                  {getAvatarUrl(profile) ? (
+                    <img 
+                      src={getAvatarUrl(profile)} 
+                      alt={profile?.full_name || "Patient"} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.style.display = 'none';
+                        const fallbackEl = e.target.parentNode.querySelector('.fallback-avatar');
+                        if (fallbackEl) fallbackEl.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div className={`fallback-avatar w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-xl lg:text-2xl ${getAvatarUrl(profile) ? 'hidden' : 'flex'}`}>
+                    {profile?.full_name
+                      ? getInitials(null, profile)
+                      : <UserIcon className="w-8 h-8 lg:w-10 lg:h-10 text-blue-600" />}
+                  </div>
+                </div>
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={triggerFileInput}
+                    disabled={imageUploading}
+                    className="absolute bottom-0 right-0 w-6 h-6 lg:w-7 lg:h-7 bg-blue-600 text-white rounded-full flex items-center justify-center border-2 border-white shadow-md hover:bg-blue-700 transition-all duration-200 cursor-pointer disabled:opacity-50"
+                    title="Upload profile picture"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </button>
+                )}
               </div>
               <div className="ml-4 lg:ml-6">
                 <h2 className="text-xl lg:text-2xl font-bold text-white">
                   {profile?.full_name || "Patient"}
                 </h2>
-                <p className="text-blue-100 text-sm lg:text-base mt-1">
-                  Patient Account
-                </p>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <p className="text-blue-100 text-sm lg:text-base">
+                    Patient Account
+                  </p>
+                  {isEditing && (profile?.profileImageUrl || profile?.profile_image_url) && (
+                    <>
+                      <span className="text-blue-200/60 text-xs">•</span>
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        disabled={imageUploading}
+                        className="text-xs text-red-200 hover:text-red-100 font-semibold underline focus:outline-none transition-all duration-150 cursor-pointer disabled:opacity-50"
+                      >
+                        Remove Photo
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
             

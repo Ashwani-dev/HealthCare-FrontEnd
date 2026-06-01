@@ -650,7 +650,7 @@ const SecuritySettings = () => {
       )}
 
       {/* Enhanced Animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes fadeIn {
           from {
             opacity: 0;

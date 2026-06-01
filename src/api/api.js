@@ -8,7 +8,8 @@ const baseURL = import.meta.env.VITE_BACKEND_BASE_URL;
 axios.interceptors.request.use(
   (config) => {
     const user = localStorage.getItem("user");
-    if (user) {
+    // Only inject authorization token if requesting our backend API base URL
+    if (user && config.url && config.url.startsWith(baseURL)) {
       const { token } = JSON.parse(user);
       if (token) {
         config.headers["Authorization"] = `Bearer ${token}`;
@@ -418,20 +419,9 @@ export const fetchDoctorProfile = async () => {
  * @returns {Promise<Object>} Doctor profile data
  */
 export const fetchDoctorProfileById = async (doctorId) => {
-  // Try the standard REST endpoint first: /api/doctor/{id}
-  // If backend uses /api/doctor/profile/{id} or /api/doctor/profile?id={id}, adjust accordingly
   const url = `${baseURL}/doctor/${doctorId}`;
-  try {
-    const res = await axios.get(url);
-    return res.data;
-  } catch (error) {
-    // Fallback: try alternative endpoint patterns if the first one fails
-    // Uncomment and adjust if your backend uses a different pattern:
-    // const altUrl = `${baseURL}/doctor/profile/${doctorId}`;
-    // const res = await axios.get(altUrl);
-    // return res.data;
-    throw error;
-  }
+  const res = await axios.get(url);
+  return res.data;
 };
 
 /**
@@ -573,4 +563,37 @@ export const fetchPatientPayments = async (
   if (params.length) url += `?${params.join("&")}`;
   const res = await axios.get(url);
   return res.data;
+};
+
+// ================= Profile Image S3 Upload API =================
+
+/**
+ * Patch profile image state (request S3 presigned URL, save key, or remove key)
+ * @param {string} role - 'doctor' or 'patient'
+ * @param {string|null} profileImageUrl - null (request URL), "remove" (delete key), or verified key string
+ * @returns {Promise<Object>} Response with presigned upload details or updated profile object
+ */
+export const patchProfileImage = async (role, profileImageUrl) => {
+  const url = `${baseURL}/${role}/profile`;
+  const res = await axios.patch(url, { profileImageUrl });
+  return res.data;
+};
+
+/**
+ * Perform a direct binary PUT upload of a file to an S3 bucket via presigned URL
+ * @param {string} presignedUrl - S3 presigned URL
+ * @param {File} file - Native File object
+ * @returns {Promise<void>}
+ */
+export const uploadFileToS3 = async (presignedUrl, file) => {
+  const response = await fetch(presignedUrl, {
+    method: "PUT",
+    body: file,
+    headers: {
+      "Content-Type": file.type
+    }
+  });
+  if (!response.ok) {
+    throw new Error(`S3 direct upload failed with status: ${response.status} - ${response.statusText}`);
+  }
 };

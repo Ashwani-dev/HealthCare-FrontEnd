@@ -98,7 +98,7 @@ const PatientRegisterForm = () => {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
       }).join(''));
       return JSON.parse(jsonPayload);
-    } catch (error) {
+    } catch {
       return null;
     }
   };
@@ -654,7 +654,7 @@ const PatientRegisterForm = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
           25% { transform: translateX(-10px); }

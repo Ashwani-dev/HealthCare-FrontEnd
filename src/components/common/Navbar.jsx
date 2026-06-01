@@ -3,31 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { fetchPatientProfile, fetchDoctorProfile } from "../../api/api";
 import Logo from "./Logo";
-
-const getInitials = (user, profile) => {
-  if (!user) return "";
-  if (profile?.full_name) {
-    return profile.full_name.split(" ").map(n => n[0]).join("").toUpperCase();
-  }
-  if (user.full_name) {
-    return user.full_name.split(" ").map(n => n[0]).join("").toUpperCase();
-  }
-  if (user.name) {
-    return user.name.split(" ").map(n => n[0]).join("").toUpperCase();
-  }
-  if (user.firstName && user.lastName) {
-    return (user.firstName[0] + user.lastName[0]).toUpperCase();
-  }
-  return "U";
-};
-
-const getUserDisplayName = (user, profile) => {
-  if (profile?.full_name) return profile.full_name;
-  if (user.full_name) return user.full_name;
-  if (user.name) return user.name;
-  if (user.firstName && user.lastName) return `${user.firstName} ${user.lastName}`;
-  return "User";
-};
+import { getAvatarUrl, getInitials, getUserDisplayName } from "../../utils/avatar";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -152,8 +128,8 @@ const Navbar = () => {
                     onClick={() => setAvatarOpen(!avatarOpen)}
                     aria-label="Open user menu"
                   >
-                    {user.profilePicture ? (
-                      <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                    {getAvatarUrl(userProfile) || user.profilePicture ? (
+                      <img src={getAvatarUrl(userProfile) || user.profilePicture} alt="Profile" className="w-full h-full object-cover rounded-full" />
                     ) : (
                       <span>{getInitials(user, userProfile)}</span>
                     )}
@@ -243,7 +219,7 @@ const Navbar = () => {
       {menuOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           {/* Backdrop with blur */}
-          <div 
+          <div
             className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
             onClick={() => setMenuOpen(false)}
           />
@@ -270,12 +246,12 @@ const Navbar = () => {
                   </svg>
                 </button>
               </div>
-              
+
               {user && (
                 <div className="flex items-center gap-3 py-3 px-4 bg-white/10 backdrop-blur-sm rounded-xl">
                   <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg border-2 border-white/30">
-                    {user.profilePicture ? (
-                      <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                    {getAvatarUrl(userProfile) || user.profilePicture ? (
+                      <img src={getAvatarUrl(userProfile) || user.profilePicture} alt="Profile" className="w-full h-full object-cover rounded-full" />
                     ) : (
                       <span>{getInitials(user, userProfile)}</span>
                     )}
@@ -295,11 +271,10 @@ const Navbar = () => {
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-2">Navigation</p>
                 <Link
                   to="/"
-                  className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${
-                    location.pathname === "/" 
-                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md" 
+                  className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${location.pathname === "/"
+                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
                       : "text-gray-700 hover:bg-gray-100 active:bg-gray-200"
-                  }`}
+                    }`}
                   onClick={() => setMenuOpen(false)}
                 >
                   <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,11 +284,10 @@ const Navbar = () => {
                 </Link>
                 <Link
                   to="/about"
-                  className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${
-                    location.pathname === "/about" 
-                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md" 
+                  className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${location.pathname === "/about"
+                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
                       : "text-gray-700 hover:bg-gray-100 active:bg-gray-200"
-                  }`}
+                    }`}
                   onClick={() => setMenuOpen(false)}
                 >
                   <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,11 +297,10 @@ const Navbar = () => {
                 </Link>
                 <Link
                   to="/contact"
-                  className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${
-                    location.pathname === "/contact" 
-                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md" 
+                  className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${location.pathname === "/contact"
+                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
                       : "text-gray-700 hover:bg-gray-100 active:bg-gray-200"
-                  }`}
+                    }`}
                   onClick={() => setMenuOpen(false)}
                 >
                   <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -366,11 +339,10 @@ const Navbar = () => {
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-2">Account</p>
                   <Link
                     to="/dashboard"
-                    className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${
-                      location.pathname === "/dashboard" 
-                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md" 
+                    className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${location.pathname === "/dashboard"
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
                         : "text-gray-700 hover:bg-gray-100 active:bg-gray-200"
-                    }`}
+                      }`}
                     onClick={() => setMenuOpen(false)}
                   >
                     <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -381,11 +353,10 @@ const Navbar = () => {
                   {user.role?.toLowerCase() === "patient" && (
                     <Link
                       to="/payments"
-                      className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${
-                        location.pathname === "/payments" 
-                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md" 
+                      className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${location.pathname === "/payments"
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
                           : "text-gray-700 hover:bg-gray-100 active:bg-gray-200"
-                      }`}
+                        }`}
                       onClick={() => setMenuOpen(false)}
                     >
                       <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -397,11 +368,10 @@ const Navbar = () => {
                   {user.role?.toLowerCase() === "doctor" && (
                     <Link
                       to="/availability"
-                      className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${
-                        location.pathname === "/availability" 
-                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md" 
+                      className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${location.pathname === "/availability"
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
                           : "text-gray-700 hover:bg-gray-100 active:bg-gray-200"
-                      }`}
+                        }`}
                       onClick={() => setMenuOpen(false)}
                     >
                       <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -412,11 +382,10 @@ const Navbar = () => {
                   )}
                   <Link
                     to="/profile"
-                    className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${
-                      location.pathname === "/profile" 
-                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md" 
+                    className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${location.pathname === "/profile"
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
                         : "text-gray-700 hover:bg-gray-100 active:bg-gray-200"
-                    }`}
+                      }`}
                     onClick={() => setMenuOpen(false)}
                   >
                     <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -426,11 +395,10 @@ const Navbar = () => {
                   </Link>
                   <Link
                     to="/security"
-                    className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${
-                      location.pathname === "/security" 
-                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md" 
+                    className={`flex items-center px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${location.pathname === "/security"
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
                         : "text-gray-700 hover:bg-gray-100 active:bg-gray-200"
-                    }`}
+                      }`}
                     onClick={() => setMenuOpen(false)}
                   >
                     <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -438,7 +406,7 @@ const Navbar = () => {
                     </svg>
                     Security Settings
                   </Link>
-                  
+
                   {/* Logout Button */}
                   <div className="pt-4 mt-4 border-t border-gray-200">
                     <button
@@ -461,7 +429,7 @@ const Navbar = () => {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         @keyframes slideInRight {
           from {
             transform: translateX(100%);

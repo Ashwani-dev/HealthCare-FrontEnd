@@ -8,3 +8,4 @@ export { Toast } from './Alert';
 export { default as Badge } from './Badge';
 export { default as Spinner, LoadingDots, LoadingSpinner } from './Spinner';
 export { default as FeatureCard } from './FeatureCard';
+export * from './Icons';
