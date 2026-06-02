@@ -12,6 +12,8 @@ services:
       # Backend service name from backend docker-compose.yml
       - BACKEND_HOST=${BACKEND_HOST:-healthcare-app}
       - BACKEND_PORT=${BACKEND_PORT:-8080}
+      - VITE_AWS_S3_BUCKET_URL=${VITE_AWS_S3_BUCKET_URL:-https://theraconnect-file-storage.s3.ap-south-1.amazonaws.com}
+      - VITE_BACKEND_BASE_URL=${VITE_BACKEND_BASE_URL:-http://localhost:8080/api}
     networks:
       # Connect to the same network as the backend
       - healthcare-network
@@ -21,5 +23,4 @@ services:
 networks:
   healthcare-network:
     external: true
-    name: healthcare_healthcare-network
-
+    name: healthcare-backend_healthcare-network
