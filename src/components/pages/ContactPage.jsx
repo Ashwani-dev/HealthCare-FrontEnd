@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { SEO } from "../common/SEO";
 import { seoConfig } from "../config/seoConfig";
 import { Button, Input, TextArea, Select, Alert } from "../ui";
+import { submitContactForm } from "../../api/api";
 
 const icons = {
   mail: (
@@ -49,6 +50,8 @@ const ContactPage = () => {
     message: ""
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [faqOpen, setFaqOpen] = useState(null);
 
   const handleChange = e => {
@@ -56,10 +59,22 @@ const ContactPage = () => {
     setForm(f => ({ ...f, [name]: value }));
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    setSubmitted(true);
-    // Here you would send the form data to your backend or email service
+    setLoading(true);
+    setError("");
+    try {
+      await submitContactForm(form);
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Failed to send contact message:", err);
+      setError(
+        err.response?.data?.message ||
+        "Failed to send your message. Please check your network and try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -91,6 +106,14 @@ const ContactPage = () => {
             </Alert>
           ) : (
             <div className="bg-white rounded-xl shadow-lg p-8 border border-blue-100">
+              {error && (
+                <Alert
+                  type="error"
+                  title="Submission Failed"
+                  message={error}
+                  className="mb-6"
+                />
+              )}
               <form className="space-y-5" onSubmit={handleSubmit} autoComplete="off">
                 <Input
                   id="name"
@@ -100,6 +123,7 @@ const ContactPage = () => {
                   value={form.name}
                   onChange={handleChange}
                   required
+                  disabled={loading}
                   autoComplete="name"
                   className=""
                 />
@@ -112,6 +136,7 @@ const ContactPage = () => {
                   value={form.email}
                   onChange={handleChange}
                   required
+                  disabled={loading}
                   autoComplete="email"
                   className=""
                 />
@@ -122,6 +147,7 @@ const ContactPage = () => {
                   label="Subject"
                   value={form.subject}
                   onChange={handleChange}
+                  disabled={loading}
                   options={[
                     'General Inquiry',
                     'Technical Support',
@@ -139,6 +165,7 @@ const ContactPage = () => {
                   label="Your Message"
                   value={form.message}
                   onChange={handleChange}
+                  disabled={loading}
                   rows={5}
                   className=""
                 />
@@ -151,6 +178,7 @@ const ContactPage = () => {
                   type="submit" 
                   variant="gradient" 
                   size="lg" 
+                  loading={loading}
                   fullWidth
                 >
                   Send Message
