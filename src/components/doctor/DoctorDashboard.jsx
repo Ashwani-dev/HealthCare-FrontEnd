@@ -6,27 +6,38 @@ import { fetchDoctorAppointments, fetchDoctorAvailability, fetchDoctorProfile, c
 import { SEO } from "../common/SEO";
 import { seoConfig } from "../config/seoConfig";
 import { Spinner } from "../ui";
-
+import { Activity } from "lucide-react";
 
 // DashboardHeader for Doctor
 const DashboardHeader = ({ doctorLastName, appointmentsTodayCount, availableSlotsThisWeekCount }) => (
-  <div className="bg-gradient-to-r from-blue-700 to-blue-500 rounded-lg p-6 mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
-    <div>
-      <h1 className="text-3xl md:text-4xl font-bold text-white mb-1">
-        Welcome, Dr. {doctorLastName}!
-      </h1>
-      <div className="text-blue-100 text-lg">
-        Here's your quick overview for today and the week.
+  <div className="relative bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 rounded-3xl p-8 mb-10 overflow-hidden shadow-lg border border-blue-500/20">
+    {/* Radial glow background blobs */}
+    <div className="absolute top-0 right-0 -mt-16 -mr-16 w-72 h-72 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-72 h-72 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+
+    <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div className="space-y-3 flex-grow">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-white border border-white/20 backdrop-blur-md">
+          <Activity className="w-3.5 h-3.5 text-white animate-pulse" />
+          Practitioner Workspace
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          Welcome, Dr. {doctorLastName}!
+        </h1>
+        <p className="text-blue-100 text-sm sm:text-base font-semibold max-w-xl">
+          Here is your overview of appointments and availability settings for this week.
+        </p>
       </div>
-    </div>
-    <div className="flex gap-4 mt-4 md:mt-0">
-      <div className="bg-white/90 rounded-lg shadow flex flex-col items-center px-6 py-3 min-w-[140px]">
-        <span className="text-blue-700 text-2xl font-bold">{appointmentsTodayCount}</span>
-        <span className="text-gray-700 text-sm font-medium">Appointments Today</span>
-      </div>
-      <div className="bg-white/90 rounded-lg shadow flex flex-col items-center px-6 py-3 min-w-[140px]">
-        <span className="text-green-600 text-2xl font-bold">{availableSlotsThisWeekCount}</span>
-        <span className="text-gray-700 text-sm font-medium">Available Slots This Week</span>
+      
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 md:mt-0 w-full md:w-auto">
+        <div className="bg-white/10 border border-white/25 backdrop-blur-lg rounded-2xl px-4 sm:px-6 py-4 flex flex-col items-center justify-center min-w-[110px] sm:min-w-[130px] hover:bg-white/15 transition-all duration-300 shadow-sm shadow-inner">
+          <span className="text-white text-2xl sm:text-3xl font-black">{appointmentsTodayCount}</span>
+          <span className="text-blue-100 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mt-1 text-center">Appointments Today</span>
+        </div>
+        <div className="bg-white/10 border border-white/25 backdrop-blur-lg rounded-2xl px-4 sm:px-6 py-4 flex flex-col items-center justify-center min-w-[110px] sm:min-w-[130px] hover:bg-white/15 transition-all duration-300 shadow-sm shadow-inner">
+          <span className="text-white text-2xl sm:text-3xl font-black">{availableSlotsThisWeekCount}</span>
+          <span className="text-blue-100 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mt-1 text-center">Available Slots</span>
+        </div>
       </div>
     </div>
   </div>
@@ -107,7 +118,7 @@ const DoctorDashboard = () => {
 
   // Count available slots for the current week
   const availableSlotsThisWeekCount = Array.isArray(availability)
-    ? availability.filter((slot) => slot.available).length
+    ? availability.filter((slot) => slot.isAvailable || slot.available).length
     : 0;
     
   if (loading) return (
@@ -185,47 +196,47 @@ const DoctorDashboard = () => {
   return (
     <>
       <SEO {...seoConfig.dashboard.doctor} />
-      <div className="max-w-5xl mx-auto mt-12 px-6">
-      <DashboardHeader
-        doctorLastName={doctorLastName}
-        appointmentsTodayCount={appointmentsTodayCount}
-        availableSlotsThisWeekCount={availableSlotsThisWeekCount}
-      />
-      
-      {/* Appointments Section */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Your Appointments</h2>
-        <AppointmentsPanel
-          appointments={safeAppointments}
-          onAction={handleAppointmentAction}
-          onJoinCall={appt => {
-            // Navigate to the video preview page
-            navigate(`/video-preview/${appt.appointmentId}/DOCTOR`);
-          }}
-          currentUserId={user?.userId}
-          userRole={user?.role}
-          searchField="patientName"
-          searchPlaceholder="Search by patient name..."
-          // Pagination props
-          isPaginated={true}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalElements={totalElements}
-          pageSize={pageSize}
-          onPageChange={handlePageChange}
-          onSortChange={handleSortChange}
-          currentSort={currentSort}
-          // Filter props
-          onFilterChange={handleFilterChange}
-          currentStatus={currentStatus}
-          currentDateFilter={currentDateFilter}
-          // Hide search bar
-          showSearch={false}
-        />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/20 to-blue-100/30 pb-16">
+        <div className="max-w-5xl mx-auto pt-8 px-6">
+          <DashboardHeader
+            doctorLastName={doctorLastName}
+            appointmentsTodayCount={appointmentsTodayCount}
+            availableSlotsThisWeekCount={availableSlotsThisWeekCount}
+          />
+          
+          {/* Appointments Section */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Appointments</h2>
+            <AppointmentsPanel
+              appointments={safeAppointments}
+              onAction={handleAppointmentAction}
+              onJoinCall={appt => {
+                // Navigate to the video preview page
+                navigate(`/video-preview/${appt.appointmentId}/DOCTOR`);
+              }}
+              currentUserId={user?.userId}
+              userRole={user?.role}
+              searchField="patientName"
+              searchPlaceholder="Search by patient name..."
+              // Pagination props
+              isPaginated={true}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalElements={totalElements}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onSortChange={handleSortChange}
+              currentSort={currentSort}
+              // Filter props
+              onFilterChange={handleFilterChange}
+              currentStatus={currentStatus}
+              currentDateFilter={currentDateFilter}
+              // Hide search bar
+              showSearch={false}
+            />
+          </div>
+        </div>
       </div>
-      
-
-    </div>
     </>
   );
 };

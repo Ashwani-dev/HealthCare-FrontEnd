@@ -13,10 +13,10 @@ import { formatTimeToAMPM } from "../../utils/dateTime";
 import { rescheduleAppointment, fetchDoctorAvailability, fetchDoctorAvailableSlots } from "../../api/api";
 
 const STATUS_STYLES = {
-  SCHEDULED: { color: "#008a7b", bg: "#e0f2f1", border: "#b2dfdb", accent: "#00bfa5" },
-  PENDING: { color: "#f57c00", bg: "#fff3e0", border: "#ffe0b2", accent: "#ffb74d" },
-  CANCELLED: { color: "#d32f2f", bg: "#ffebee", border: "#ffcdd2", accent: "#ef5350" },
-  COMPLETED: { color: "#283593", bg: "#e8eaf6", border: "#c5cae9", accent: "#3f51b5" },
+  SCHEDULED: { color: "#0f766e", bg: "#f0fdfa", border: "#ccfbf1", accent: "#0d9488" },
+  PENDING: { color: "#b45309", bg: "#fffbeb", border: "#fef3c7", accent: "#d97706" },
+  CANCELLED: { color: "#b91c1c", bg: "#fef2f2", border: "#fee2e2", accent: "#dc2626" },
+  COMPLETED: { color: "#1e3a8a", bg: "#eff6ff", border: "#dbeafe", accent: "#3b82f6" },
 };
 
 const MAX_REASON_LENGTH = 80;
@@ -122,7 +122,7 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, use
       
       // Check if doctor has slots on this day
       const hasSlots = availability.some(slot => 
-        slot.dayOfWeek === dayOfWeek && slot.available
+        slot.dayOfWeek === dayOfWeek && (slot.isAvailable || slot.available)
       );
       
       if (hasSlots) {
@@ -235,22 +235,30 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, use
     <>
       <Card sx={{ 
         mb: { xs: 2, sm: 3 }, 
-        borderRadius: { xs: 2, md: 3 }, 
+        borderRadius: { xs: 3, md: 4 }, 
         overflow: 'hidden',
-        borderLeft: `5px solid ${statusTheme.accent}`, 
-        boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+        borderLeft: `6px solid ${statusTheme.accent}`, 
+        boxShadow: "0 4px 20px rgba(0,0,0,0.02), 0 2px 8px rgba(0,0,0,0.02)",
         backgroundColor: "#ffffff",
-        transition: 'all 0.2s ease-in-out',
-        '&:hover': { boxShadow: "0 6px 18px rgba(0,0,0,0.08)" }
+        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+        border: '1px solid #f1f5f9',
+        borderLeftWidth: '6px',
+        '&:hover': { 
+          boxShadow: "0 10px 25px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.03)",
+          transform: 'translateY(-2px)'
+        }
       }}>
-        <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
+        <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 3.5 } }}>
           {/* Header Section - Mobile Optimized */}
           <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} gap={{ xs: 1.5, sm: 2 }} mb={{ xs: 1.5, sm: 2 }}>
             <Box>
-              <Typography variant="overline" color="#78909c" fontWeight={800} sx={{ letterSpacing: 1.2, fontSize: { xs: '0.6rem', sm: '0.65rem' } }}>
-                {normalizedRole === "doctor" ? "PATIENT" : "PRACTITIONER"}
-              </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: '#283593', fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.45rem' } }}>
+              <Box display="flex" alignItems="center" gap={1}>
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                <Typography variant="overline" color="#4f46e5" fontWeight={800} sx={{ letterSpacing: 1.5, fontSize: { xs: '0.6rem', sm: '0.65rem' } }}>
+                  {normalizedRole === "doctor" ? "PATIENT" : "THERAPIST"}
+                </Typography>
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mt: 0.5, fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.45rem' } }}>
                 {normalizedRole === "doctor" ? (appointment.patientName || "Patient") : `Dr. ${doctorName}`}
               </Typography>
             </Box>
@@ -294,7 +302,7 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, use
           </Box>
 
           {/* Description/Notes - Mobile Optimized */}
-          <Box sx={{ bgcolor: '#f8fafc', p: { xs: 1.5, sm: 2 }, borderRadius: { xs: 1.5, sm: 2 }, border: '1px dashed #e2e8f0' }}>
+          <Box sx={{ bgcolor: '#f8fafc', p: { xs: 1.5, sm: 2 }, borderRadius: 3, border: '1px solid #f1f5f9' }}>
             <Typography variant="body2" sx={{ color: '#455a64', lineHeight: 1.6, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
               <Box component="span" fontWeight={800} color="#94a3b8" mr={1} sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' } }}>NOTES:</Box>
               {showExpand && !expanded ? `${description.slice(0, MAX_REASON_LENGTH)}...` : description}
@@ -348,19 +356,19 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, use
                   sx={{ 
                     fontWeight: 700, 
                     textTransform: 'none', 
-                    borderRadius: 1.5,
+                    borderRadius: 2.5,
                     px: { xs: 2.5, sm: 3 },
                     py: { xs: 1.25, sm: 1.5 },
                     fontSize: { xs: '0.85rem', sm: '0.875rem' },
-                    color: canCancel ? '#ef5350' : '#cfd8dc',
-                    borderColor: canCancel ? '#ffcdd2' : '#f1f1f1',
+                    color: canCancel ? '#ef4444' : '#cfd8dc',
+                    borderColor: canCancel ? '#fee2e2' : '#f1f5f9',
                     '&:hover': { 
-                      bgcolor: '#fff5f5',
-                      borderColor: '#ef5350' 
+                      bgcolor: '#fef2f2',
+                      borderColor: '#ef4444' 
                     },
                     '&.Mui-disabled': {
-                      borderColor: '#f1f1f1',
-                      color: '#cfd8dc'
+                      borderColor: '#f8fafc',
+                      color: '#cbd5e1'
                     }
                   }}
                 >
@@ -379,18 +387,18 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, use
                   onClick={handleOpenReschedule} 
                   startIcon={<FaEdit size={isMobile ? 12 : 14} />}
                   sx={{ 
-                    borderRadius: 1.5, 
+                    borderRadius: 2.5, 
                     textTransform: 'none', 
                     fontWeight: 700, 
                     px: { xs: 2.5, sm: 3 },
                     py: { xs: 1.25, sm: 1.5 },
                     fontSize: { xs: '0.85rem', sm: '0.875rem' },
-                    color: canReschedule ? '#475569' : '#cfd8dc', 
-                    borderColor: canReschedule ? '#cbd5e1' : '#f1f1f1', 
-                    '&:hover': { borderColor: '#283593', bgcolor: '#f0f2ff' },
+                    color: canReschedule ? '#4f46e5' : '#cfd8dc', 
+                    borderColor: canReschedule ? '#e0e7ff' : '#f1f5f9', 
+                    '&:hover': { borderColor: '#4f46e5', bgcolor: '#f5f3ff' },
                     '&.Mui-disabled': {
-                      borderColor: '#f1f1f1',
-                      color: '#cfd8dc'
+                      borderColor: '#f8fafc',
+                      color: '#cbd5e1'
                     }
                   }}
                 >
@@ -411,15 +419,27 @@ const AppointmentCard = ({ appointment, onAction, onJoinCall, currentUserId, use
                 onClick={() => onJoinCall?.(appointment)} 
                 startIcon={<VideocamIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.3rem' } }} />}
                 sx={{ 
-                  borderRadius: 1.5, 
+                  borderRadius: 2.5, 
                   textTransform: 'none', 
                   fontWeight: 700, 
                   px: { xs: 2.5, sm: 4 },
                   py: { xs: 1.25, sm: 1.5 },
                   fontSize: { xs: '0.85rem', sm: '0.875rem' },
-                  bgcolor: '#283593', 
-                  '&:hover': { bgcolor: '#1a237e' },
-                  '&.Mui-disabled': { bgcolor: '#e2e8f0', color: '#94a3b8' } 
+                  bgcolor: joinable ? '#283593' : '#e2e8f0', 
+                  backgroundImage: joinable ? 'linear-gradient(to right, #4f46e5, #3b82f6)' : 'none',
+                  color: joinable ? '#ffffff' : '#94a3b8',
+                  boxShadow: joinable ? '0 4px 14px rgba(79, 70, 229, 0.4)' : 'none',
+                  '&:hover': { 
+                    bgcolor: '#1a237e',
+                    backgroundImage: joinable ? 'linear-gradient(to right, #4338ca, #2563eb)' : 'none',
+                    boxShadow: joinable ? '0 6px 20px rgba(79, 70, 229, 0.6)' : 'none',
+                  },
+                  animation: joinable ? 'pulse-glow 2s infinite ease-in-out' : 'none',
+                  '@keyframes pulse-glow': {
+                    '0%, 100%': { transform: 'scale(1)', boxShadow: '0 4px 14px rgba(79, 70, 229, 0.3)' },
+                    '50%': { transform: 'scale(1.02)', boxShadow: '0 4px 20px rgba(79, 70, 229, 0.55)' },
+                  },
+                  '&.Mui-disabled': { bgcolor: '#f1f5f9', color: '#cbd5e1' } 
                 }}
               >
                 Join Consultation
