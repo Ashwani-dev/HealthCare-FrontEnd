@@ -25,7 +25,7 @@ export const formatISTDateTime = (value, { includeTimezone = true } = {}) => {
     const dayPeriod = (map.dayPeriod || "").toUpperCase(); // AM/PM
     const base = `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute}:${map.second} ${dayPeriod}`.trim();
     return includeTimezone ? `${base} IST` : base;
-  } catch (e) {
+  } catch {
     return String(value);
   }
 };

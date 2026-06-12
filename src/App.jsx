@@ -1,32 +1,32 @@
 import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import Navbar from "./components/common/Navbar";
-import { LoadingSpinner } from "./components/ui";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import Navbar from "@/components/common/Navbar";
+import { LoadingSpinner } from "@/components/ui";
 
 // Lazy load all page components for better performance
-const HomePage = lazy(() => import("./components/pages/HomePage"));
-const AboutPage = lazy(() => import("./components/pages/AboutPage"));
-const ContactPage = lazy(() => import("./components/pages/ContactPage"));
-const LoginForm = lazy(() => import("./components/auth/LoginForm"));
-const RegisterForm = lazy(() => import("./components/auth/RegisterForm"));
-const DoctorDashboard = lazy(() => import("./components/doctor/DoctorDashboard"));
-const DoctorAvailabilityPage = lazy(() => import("./components/doctor/DoctorAvailabilityPage"));
-const PatientDashboard = lazy(() => import("./components/patient/PatientDashboard"));
-const PatientProfileDashboard = lazy(() => import("./components/pages/PatientProfileDashboard"));
-const DoctorProfileDashboard = lazy(() => import("./components/pages/DoctorProfileDashboard"));
-const FindTherapistPage = lazy(() => import("./components/pages/FindTherapistPage"));
-const VideoCallPreviewPage = lazy(() => import("./components/pages/VideoCallPreviewPage"));
-const VideoCallPage = lazy(() => import("./components/pages/VideoCallPage"));
-const PaymentSuccess = lazy(() => import("./components/payments/PaymentSuccess"));
-const PaymentFailure = lazy(() => import("./components/payments/PaymentFailure"));
-const PaymentPending = lazy(() => import("./components/payments/PaymentPending"));
-const PaymentStatus = lazy(() => import("./components/payments/PaymentStatus"));
-const PatientPaymentsPage = lazy(() => import("./components/pages/PatientPaymentsPage"));
-const ForgotPasswordPage = lazy(() => import("./components/auth/ForgotPasswordPage"));
-const ResetPasswordPage = lazy(() => import("./components/auth/ResetPasswordPage"));
-const UserJourneyPage = lazy(() => import("./components/pages/UserJourneyPage"));
-const SecuritySettings = lazy(() => import("./components/pages/SecuritySettings"));
+const HomePage = lazy(() => import("@/pages/HomePage"));
+const AboutPage = lazy(() => import("@/pages/AboutPage"));
+const ContactPage = lazy(() => import("@/pages/ContactPage"));
+const LoginForm = lazy(() => import("@/features/auth/components/LoginForm"));
+const RegisterForm = lazy(() => import("@/features/auth/components/RegisterForm"));
+const DoctorDashboard = lazy(() => import("@/features/dashboard/pages/DoctorDashboard"));
+const DoctorAvailabilityPage = lazy(() => import("@/features/appointments/pages/DoctorAvailabilityPage"));
+const PatientDashboard = lazy(() => import("@/features/dashboard/pages/PatientDashboard"));
+const PatientProfileDashboard = lazy(() => import("@/features/dashboard/pages/PatientProfileDashboard"));
+const DoctorProfileDashboard = lazy(() => import("@/features/dashboard/pages/DoctorProfileDashboard"));
+const FindTherapistPage = lazy(() => import("@/features/appointments/pages/FindTherapistPage"));
+const VideoCallPreviewPage = lazy(() => import("@/features/video/pages/VideoCallPreviewPage"));
+const VideoCallPage = lazy(() => import("@/features/video/pages/VideoCallPage"));
+const PaymentSuccess = lazy(() => import("@/features/billing/components/PaymentSuccess"));
+const PaymentFailure = lazy(() => import("@/features/billing/components/PaymentFailure"));
+const PaymentPending = lazy(() => import("@/features/billing/components/PaymentPending"));
+const PaymentStatus = lazy(() => import("@/features/billing/components/PaymentStatus"));
+const PatientPaymentsPage = lazy(() => import("@/features/billing/pages/PatientPaymentsPage"));
+const ForgotPasswordPage = lazy(() => import("@/features/auth/pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("@/features/auth/pages/ResetPasswordPage"));
+const UserJourneyPage = lazy(() => import("@/features/user-journey/UserJourneyPage"));
+const SecuritySettings = lazy(() => import("@/features/dashboard/pages/SecuritySettings"));
 
 // Dashboard Component with loading state
 const Dashboard = () => {

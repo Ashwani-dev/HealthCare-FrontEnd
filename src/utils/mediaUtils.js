@@ -51,7 +51,7 @@ export const forceStopAllMediaTracks = () => {
     }
 
     // All media tracks stopped successfully
-  } catch (error) {
+  } catch {
     // Error stopping media tracks
   }
 };
@@ -102,20 +102,16 @@ export const hasActiveMediaTracks = () => {
  * @returns {Promise<MediaStream>} Promise that resolves to the media stream
  */
 export const requestMediaPermissions = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: {
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        facingMode: 'user'
-      }
-    });
-    // Media permissions granted
-    return stream;
-  } catch (error) {
-    throw error;
-  }
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: {
+      width: { ideal: 1280 },
+      height: { ideal: 720 },
+      facingMode: 'user'
+    }
+  });
+  // Media permissions granted
+  return stream;
 };
 
 /**

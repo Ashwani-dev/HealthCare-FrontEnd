@@ -109,32 +109,43 @@ Root -- repo root (frontend project)
 .
 ├── public/                      # Static assets delivered as-is (images, manifest)
 ├── src/                         # Application source code
-│   ├── api/                     # Service layer: `api.js` centralizes HTTP calls to backend
-│   ├── components/              # UI components and pages (feature-organized)
-│   │   ├── auth/                # Authentication UI (LoginForm, RegisterForm, password reset)
-│   │   ├── common/              # Shared components (Navbar, ProtectedRoute, cards, video UI)
-│   │   ├── doctor/              # Doctor-facing components (Dashboard, Availability)
-│   │   ├── patient/             # Patient-facing components (Dashboard, Booking)
-│   │   ├── payments/            # Payment-related components and Cashfree helper
-│   │   └── pages/               # Top-level page components used by router
+│   ├── api/                     # Service layer: `api.js` barrel re-exporting modular feature APIs
+│   ├── assets/                  # Logos, illustrations, and global images
+│   ├── components/              # Global shared components
+│   │   ├── common/              # Layout structural wrappers (Navbar, SEO, ProtectedRoute)
+│   │   └── ui/                  # Atomic presentation components (Button, Input, Alert, Spinner)
+│   ├── config/                  # Global application configuration (SEO, constants)
 │   ├── context/                 # React Context providers (AuthContext.jsx)
+│   ├── features/                # Domain-driven feature modules (Screaming Architecture)
+│   │   ├── appointments/        # Appointment cards, booking forms, availability settings
+│   │   ├── auth/                # Login, registration, forgot/reset password, TOTP setup
+│   │   ├── billing/             # Patient payment histories, checkout integrations, status pills
+│   │   ├── dashboard/           # Doctor dashboard, patient dashboard, profile settings
+│   │   ├── user-journey/        # Onboarding / how-it-works walk-through guides
+│   │   └── video/               # Twilio video consults, preview dialogs
+│   ├── hooks/                   # Global reusable React hooks
+│   ├── pages/                   # Global templates and marketing pages (Home, About, Contact)
+│   ├── services/                # Central services (Axios client base configuration)
 │   ├── styles/                  # CSS modules and global styles
 │   ├── utils/                   # Utility functions (dateTime, mediaUtils, validation)
 │   ├── App.jsx                  # Router and top-level route protection
 │   └── main.jsx                 # React entry point
 ├── package.json
 ├── vite.config.js
+├── jsconfig.json                # Configured path aliasing (@/* -> src/*)
 ├── README.md
-└── docs/                        # (created) long-term project docs
+└── docs/                        # long-term project docs
 ```
 
 Note: Git ignore details not available in repo snapshot; common items such as `node_modules/` and `.env` are likely ignored (TBD).
 
 ### Design Patterns (observed)
 
-- Feature-Based Organization: Folder structure groups components by feature area (`auth`, `doctor`, `patient`). Used to separate pages and components by domain.
+- Feature-Based Organization (Screaming Architecture): Domain files are co-located in `src/features/` (e.g., `features/auth/`, `features/appointments/`), separating pages, components, and local APIs by feature.
 
-- Service Layer: `src/api/api.js` centralizes HTTP calls and acts as a small service layer. This file contains all exported functions that interact with backend endpoints and handles token injection via an axios interceptor.
+- Path Aliasing: Uses Vite-configured `@/` path aliasing resolving to `src/` to prevent relative import clutter (`../../..`).
+
+- Service Layer: Modularized API functions are kept near their respective feature folders, and re-exported via `src/api/api.js` (barrel file) for compatibility. Core client is in `src/services/apiClient.js`.
 
 - Context Provider: `AuthContext.jsx` implements React Context to hold authentication state (user + loading) and exposes `login`/`logout`. Used across the app via `useAuth()`.
 
@@ -238,12 +249,12 @@ const login = (userData) => {
 
 - Purpose: Securely accept payments and finalize appointment bookings.
 
-- Entry component/route: Payment components under `src/components/payments/` and routes `/payment-success`, `/payment-failure`, `/payment-pending`, `/payment-status`.
+- Entry component/route: Payment components under `src/features/billing/components/` and routes `/payment-success`, `/payment-failure`, `/payment-pending`, `/payment-status`.
 
 - Flow (observed):
   1. `createAppointmentHold` -> receive hold id.
   2. `initiatePaymentWithHold(paymentData)` sends hold + customer details to backend which returns payment session id.
-  3. `cashfreeCheckout` (src/components/payments/cashfree.js) loads Cashfree SDK and calls checkout with `paymentSessionId`.
+  3. `cashfreeCheckout` (src/features/billing/components/cashfree.js) loads Cashfree SDK and calls checkout with `paymentSessionId`.
   4. Payment result handled via success/failure callbacks and status checked via `getPaymentStatus(orderId)`.
 
 - Notable implementation details:
@@ -421,7 +432,7 @@ Observed optimizations implemented in code:
   - Measured result: TBD
 
 - Single-instance Cashfree initialization
-  - What: `cashfree` SDK instance cached in `src/components/payments/cashfree.js` via `initializeCashfree()` (singleton pattern).
+  - What: `cashfree` SDK instance cached in `src/features/billing/components/cashfree.js` via `initializeCashfree()` (singleton pattern).
   - Why: Avoid reloading SDK multiple times and reduce network/work.
   - Code sample: present in `cashfree.js`.
   - Measured result: TBD
@@ -429,7 +440,7 @@ Observed optimizations implemented in code:
 - Axios request interceptor
   - What: Adds `Authorization` header centrally to reduce duplicate header handling.
   - Why: Centralized auth header management.
-  - Code: `axios.interceptors.request.use(...)` in `src/api/api.js`.
+  - Code: `apiClient.interceptors.request.use(...)` in `src/services/apiClient.js`.
   - Measured result: TBD
 
 Not implemented or not observed (explicitly): request deduplication, batching, optimistic updates, virtualization, centralized TTL caching. Those items appear as opportunities for improvement.
@@ -493,18 +504,16 @@ Below are the key components discovered in the snapshot. This is a curated list;
   - Purpose: Centralized API client and exported service functions.
   - Exports: `registerUser`, `loginUser`, `createAppointmentHold`, `fetchDoctorAppointments`, `fetchPatientAppointments`, `cancelAppointment`, `rescheduleAppointment`, `fetchDoctorAvailableSlots`, `setDoctorAvailability`, `fetchDoctorAvailability`, `deleteAvailabilitySlot`, `fetchDoctorsSearch`, `fetchDoctorsBySpecialization`, `fetchPatientProfile`, `fetchDoctorProfile`, `fetchDoctorProfileById`, `updatePatientProfile`, `updateDoctorProfile`, `createVideoSession`, `getVideoSession`, `getVideoToken`, `endVideoSession`, `initiatePaymentWithHold`, `getPaymentStatus`, `fetchPatientPayments`.
 
-- `src/components/payments/cashfree.js`
+- `src/features/billing/components/cashfree.js`
   - Purpose: Cashfree SDK wrapper (initialize SDK, checkout helper, success/failure handlers, payment verification helper).
   - Notable caveats: `verifyPayment` uses a relative `/api/payment/verify/:sessionId` path (see Known Issues).
 
-- `src/components/pages/*` (HomePage, FindTherapistPage, PatientPaymentsPage, VideoCallPage, etc.)
+- `src/pages/*` and `src/features/*/pages/*`
   - Purpose: Top-level pages wired into routing in `App.jsx`.
 
 For full file-by-file descriptions see the Appendix.
 
-## 10. Service Layer
-
-Primary service module: `src/api/api.js`.
+Primary service modules: `src/features/*/api/*.js` (aggregated by `src/api/api.js`).
 
 - Purpose: Encapsulate backend HTTP interactions and present promise-returning functions to UI.
 
@@ -579,23 +588,29 @@ Alphabetical index of important files (snapshot):
 - [src/main.jsx](src/main.jsx#L1) — React entry point, mounts `App`.
 - [src/api/api.js](src/api/api.js#L1) — Centralized API client and exported service functions.
 - [src/context/AuthContext.jsx](src/context/AuthContext.jsx#L1) — Auth React Context provider; stores `user` in `localStorage`.
-- [src/components/payments/cashfree.js](src/components/payments/cashfree.js#L1) — Cashfree SDK wrapper and helpers.
-- [src/components/auth/LoginForm.jsx](src/components/auth/LoginForm.jsx#L1) — (component) Login form (lazy-loaded).
-- [src/components/auth/RegisterForm.jsx](src/components/auth/RegisterForm.jsx#L1) — (component) Registration form.
-- [src/components/doctor/DoctorDashboard.jsx](src/components/doctor/DoctorDashboard.jsx#L1) — Doctor dashboard page.
-- [src/components/doctor/DoctorAvailabilityPage.jsx](src/components/doctor/DoctorAvailabilityPage.jsx#L1) — Doctor availability management page.
-- [src/components/patient/PatientDashboard.jsx](src/components/patient/PatientDashboard.jsx#L1) — Patient dashboard page.
-- [src/components/patient/BookAppointment.jsx](src/components/patient/BookAppointment.jsx#L1) — Booking UI.
-- [src/components/pages/FindTherapistPage.jsx](src/components/pages/FindTherapistPage.jsx#L1) — Therapist discovery page.
-- [src/components/pages/VideoCallPage.jsx](src/components/pages/VideoCallPage.jsx#L1) — Video call page.
+- [src/features/billing/components/cashfree.js](src/features/billing/components/cashfree.js#L1) — Cashfree SDK wrapper and helpers.
+- [src/features/auth/components/LoginForm.jsx](src/features/auth/components/LoginForm.jsx#L1) — (component) Login form (lazy-loaded).
+- [src/features/auth/components/RegisterForm.jsx](src/features/auth/components/RegisterForm.jsx#L1) — (component) Registration form.
+- [src/features/dashboard/pages/DoctorDashboard.jsx](src/features/dashboard/pages/DoctorDashboard.jsx#L1) — Doctor dashboard page.
+- [src/features/appointments/pages/DoctorAvailabilityPage.jsx](src/features/appointments/pages/DoctorAvailabilityPage.jsx#L1) — Doctor availability management page.
+- [src/features/dashboard/pages/PatientDashboard.jsx](src/features/dashboard/pages/PatientDashboard.jsx#L1) — Patient dashboard page.
+- [src/features/appointments/components/BookAppointment.jsx](src/features/appointments/components/BookAppointment.jsx#L1) — Booking UI.
+- [src/features/appointments/pages/FindTherapistPage.jsx](src/features/appointments/pages/FindTherapistPage.jsx#L1) — Therapist discovery page.
+- [src/features/video/pages/VideoCallPage.jsx](src/features/video/pages/VideoCallPage.jsx#L1) — Video call page.
 - [vite.config.js](vite.config.js#L1) — Vite configuration.
 - [README.md](README.md#L1) — Project README and quickstart instructions.
 
-Files not listed above should be consulted directly in the `src/components` tree for implementation details.
+Files not listed above should be consulted directly in the `src/features` and `src/components` trees for implementation details.
 
 ## 14. Refactoring/ Migration History
 
 The repository snapshot contains a `README` section that lists release notes. Below are the release notes copied from README (as the source-of-truth in this frontend snapshot):
+
+- v1.3.0
+  - Refactored entire project structure to Screaming Feature-Based Architecture (co-locating APIs, components, and pages inside domain folders under `src/features/`).
+  - Configured `@/*` path aliasing in Vite config and JSConfig to resolve relative import clutter.
+  - Formulated centralized base Axios client in `src/services/apiClient.js` with modular feature-based API endpoints.
+  - Fixed various ESLint errors and warnings to make `npm run lint` pass successfully.
 
 - v1.2.0
   - Payment history and enhanced UI
@@ -621,7 +636,7 @@ and copy the resulting commit messages into this file.
 
 Notes and action items (recommended next steps):
 
-1. Replace relative `fetch('/api/...')` in `src/components/payments/cashfree.js` with `import.meta.env.VITE_BACKEND_BASE_URL` to ensure consistent base URL handling.
+1. Replace relative `fetch('/api/...')` in `src/features/billing/components/cashfree.js` with `import.meta.env.VITE_BACKEND_BASE_URL` to ensure consistent base URL handling.
 2. Add a client-side data fetching/cache library (react-query or SWR) to provide caching, in-flight dedup, and better error handling.
 3. Add a `CONTRIBUTING.md` or `CODE_STYLE.md` to capture coding standards (JSDoc, ESLint rules, commit message format).
 4. Add unit & integration tests and a CI job to run lint/tests on PRs.

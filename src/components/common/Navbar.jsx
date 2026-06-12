@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { fetchPatientProfile, fetchDoctorProfile } from "../../api/api";
-import Logo from "./Logo";
-import { getAvatarUrl, getInitials, getUserDisplayName } from "../../utils/avatar";
+import { useAuth } from "@/context/AuthContext";
+import { fetchPatientProfile, fetchDoctorProfile } from "@/api/api";
+import Logo from "@/components/common/Logo";
+import { getAvatarUrl, getInitials, getUserDisplayName } from "@/utils/avatar";
 
 const Navbar = () => {
   const { user, logout } = useAuth();

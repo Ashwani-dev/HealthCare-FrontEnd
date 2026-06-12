@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { patchProfileImage, uploadFileToS3 } from "../api/api";
+import { patchProfileImage, uploadFileToS3 } from "@/api/api";
 
 /**
  * Custom React Hook to manage profile image upload, removal, and trigger actions.

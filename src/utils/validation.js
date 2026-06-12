@@ -146,7 +146,7 @@ export const validateGender = (value) => {
 
 export const validateLicenseNumber = (value) => {
   const errors = [];
-  const licenseRegex = /^[A-Za-z0-9\-]+$/;
+  const licenseRegex = /^[A-Za-z0-9-]+$/;
   
   if (!value) {
     errors.push('License number is required');
@@ -225,7 +225,7 @@ export const validatePatientForm = (formData) => {
   
   const isValid = Object.values(validations).every(v => v.isValid);
   const errors = Object.entries(validations)
-    .filter(([_, v]) => !v.isValid)
+    .filter(([, v]) => !v.isValid)
     .reduce((acc, [key, v]) => ({ ...acc, [key]: v.errors }), {});
   
   return { isValid, errors, validations };
@@ -247,7 +247,7 @@ export const validateDoctorForm = (formData) => {
   
   const isValid = Object.values(validations).every(v => v.isValid);
   const errors = Object.entries(validations)
-    .filter(([_, v]) => !v.isValid)
+    .filter(([, v]) => !v.isValid)
     .reduce((acc, [key, v]) => ({ ...acc, [key]: v.errors }), {});
   
   return { isValid, errors, validations };
