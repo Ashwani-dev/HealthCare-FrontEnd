@@ -46,7 +46,7 @@ const PatientProfileDashboard = () => {
         setForm(data);
         setLoading(false);
         // Cache profile data including totpEnabled status
-        localStorage.setItem('profileData', JSON.stringify(data));
+        sessionStorage.setItem('profileData', JSON.stringify(data));
       })
       .catch(() => {
         setError("Failed to load profile.");
@@ -83,7 +83,7 @@ const PatientProfileDashboard = () => {
       setProfile(updatedProfile);
       setForm({ ...form, ...updated });
       // Update cached profile data
-      localStorage.setItem('profileData', JSON.stringify(updatedProfile));
+      sessionStorage.setItem('profileData', JSON.stringify(updatedProfile));
       setIsEditing(false);
       showToastMessage("Profile updated successfully!", "success");
     } catch {

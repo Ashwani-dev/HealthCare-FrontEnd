@@ -12,7 +12,7 @@ export default function PaymentFailure() {
   const { user } = useAuth();
 
   useEffect(() => {
-    const storedData = localStorage.getItem('paymentData');
+    const storedData = sessionStorage.getItem('paymentData');
     if (storedData) {
       setPaymentData(JSON.parse(storedData));
     }

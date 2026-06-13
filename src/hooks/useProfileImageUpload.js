@@ -60,7 +60,7 @@ export const useProfileImageUpload = ({
       
       setProfile(newProfile);
       setForm({ ...form, ...updatedProfile });
-      localStorage.setItem('profileData', JSON.stringify(newProfile));
+      sessionStorage.setItem('profileData', JSON.stringify(newProfile));
 
       showToast("Profile picture updated successfully!", "success");
     } catch (err) {
@@ -80,7 +80,7 @@ export const useProfileImageUpload = ({
       
       setProfile(newProfile);
       setForm({ ...form, ...updatedProfile });
-      localStorage.setItem('profileData', JSON.stringify(newProfile));
+      sessionStorage.setItem('profileData', JSON.stringify(newProfile));
       
       showToast("Profile picture removed successfully!", "success");
     } catch (err) {

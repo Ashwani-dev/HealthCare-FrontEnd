@@ -16,7 +16,7 @@ export default function PaymentPending() {
   const [isPolling, setIsPolling] = useState(false);
 
   useEffect(() => {
-    const storedData = localStorage.getItem('paymentData');
+    const storedData = sessionStorage.getItem('paymentData');
     if (storedData) {
       setPaymentData(JSON.parse(storedData));
     }

@@ -20,8 +20,8 @@ const SecuritySettings = () => {
       try {
         setProfileLoading(true);
         
-        // First, try to get cached profile data from localStorage
-        const cachedProfile = localStorage.getItem('profileData');
+        // First, try to get cached profile data from sessionStorage
+        const cachedProfile = sessionStorage.getItem('profileData');
         
         if (cachedProfile) {
           const profileData = JSON.parse(cachedProfile);
@@ -80,11 +80,11 @@ const SecuritySettings = () => {
       localStorage.setItem('loginMethod', 'PASSWORD');
       
       // Update cached profile data with new totpEnabled status
-      const cachedProfile = localStorage.getItem('profileData');
+      const cachedProfile = sessionStorage.getItem('profileData');
       if (cachedProfile) {
         const profileData = JSON.parse(cachedProfile);
         profileData.totpEnabled = false;
-        localStorage.setItem('profileData', JSON.stringify(profileData));
+        sessionStorage.setItem('profileData', JSON.stringify(profileData));
       }
       
       // Update user context
@@ -110,11 +110,11 @@ const SecuritySettings = () => {
     localStorage.setItem('loginMethod', 'TOTP');
     
     // Update cached profile data with new totpEnabled status
-    const cachedProfile = localStorage.getItem('profileData');
+    const cachedProfile = sessionStorage.getItem('profileData');
     if (cachedProfile) {
       const profileData = JSON.parse(cachedProfile);
       profileData.totpEnabled = true;
-      localStorage.setItem('profileData', JSON.stringify(profileData));
+      sessionStorage.setItem('profileData', JSON.stringify(profileData));
     }
     
     // Update user context

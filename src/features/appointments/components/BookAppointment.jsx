@@ -180,7 +180,7 @@ const BookAppointment = ({ doctor, patientId, onBooked, onCancel }) => {
       };
       
       // Store payment data for result pages
-      localStorage.setItem('paymentData', JSON.stringify(paymentData));
+      sessionStorage.setItem('paymentData', JSON.stringify(paymentData));
       
       const response = await initiatePaymentWithHold(paymentData);
       const sessionId = response.paymentSessionId;

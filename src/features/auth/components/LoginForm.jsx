@@ -20,12 +20,19 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check for success message from registration redirect
+  // Check for success message or session expiry notifications
   useEffect(() => {
     if (location.state?.message) {
-      setSuccess(location.state.message);
+      if (location.state.isError) {
+        setErr(location.state.message);
+      } else {
+        setSuccess(location.state.message);
+      }
       // Clear the state to prevent showing message on refresh
       window.history.replaceState({}, document.title);
+    } else if (sessionStorage.getItem("sessionExpired") === "true") {
+      setErr("Your session has expired. Please log in again.");
+      sessionStorage.removeItem("sessionExpired");
     }
   }, [location]);
 

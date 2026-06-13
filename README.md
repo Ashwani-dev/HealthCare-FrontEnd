@@ -17,7 +17,7 @@ A modern React-based web application that connects patients with licensed mental
 
 ### For Doctors/Therapists
 - **Professional Registration** - Complete profile setup with credentials
-- **Availability Management** - Set weekly availability schedules
+- **Availability Management** - Set weekly availability schedules with slot-wise active/inactive status toggles and custom deletion modals
 - **Appointment Dashboard** - View and manage patient appointments
 - **Video Call Integration** - Conduct secure online consultations
 - **Patient Management** - Access patient information and appointment history
@@ -73,55 +73,30 @@ A modern React-based web application that connects patients with licensed mental
 frontend/
 ├── public/                 # Static assets
 ├── src/
-│   ├── api/               # API service functions
-│   │   └── api.js         # All API endpoints and HTTP requests
-│   ├── components/        # React components
-│   │   ├── auth/          # Authentication components
-│   │   │   ├── LoginForm.jsx
-│   │   │   ├── RegisterForm.jsx
-│   │   │   ├── DoctorRegisterForm.jsx
-│   │   │   └── PatientRegisterForm.jsx
-│   │   ├── common/        # Shared components
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── ProtectedRoute.jsx
-│   │   │   ├── AppointmentCard.jsx
-│   │   │   ├── AppointmentsPanel.jsx
-│   │   │   ├── VideoCall.jsx
-│   │   │   └── VideoCallPreview.jsx
-│   │   ├── doctor/        # Doctor-specific components
-│   │   │   ├── DoctorDashboard.jsx
-│   │   │   └── DoctorAvailabilityPage.jsx
-│   │   ├── patient/       # Patient-specific components
-│   │   │   ├── PatientDashboard.jsx
-│   │   │   └── BookAppointment.jsx
-│   │   ├── pages/         # Page components
-│   │   │   ├── HomePage.jsx
-│   │   │   ├── AboutPage.jsx
-│   │   │   ├── ContactPage.jsx
-│   │   │   ├── FindTherapistPage.jsx
-│   │   │   ├── DoctorProfileDashboard.jsx
-│   │   │   ├── PatientProfileDashboard.jsx
-│   │   │   ├── PatientPaymentsPage.jsx
-│   │   │   ├── VideoCallPage.jsx
-│   │   │   └── VideoCallPreviewPage.jsx
-│   │   └── payment/       # Payment components
-│   │       ├── cashfree.js
-│   │       ├── PaymentStatus.jsx
-│   │       ├── PaymentSuccess.jsx
-│   │       ├── PaymentFailure.jsx
-│   │       └── PaymentPending.jsx
-│   ├── context/           # React Context providers
-│   │   └── AuthContext.jsx # Authentication state management
-│   ├── styles/            # CSS modules and styles
-│   ├── utils/             # Utility functions
-│   │   ├── mediaUtils.js  # Media handling utilities
-│   │   └── dateTime.js    # Date-time formatting utilities
-│   ├── App.jsx            # Main application component
-│   ├── main.jsx           # Application entry point
-│   └── index.css          # Global styles
-├── package.json           # Dependencies and scripts
-├── vite.config.js         # Vite configuration
-└── eslint.config.js       # ESLint configuration
+│   ├── assets/             # Logos, illustrations, and global images
+│   ├── components/         # Shared global components
+│   │   ├── common/         # Layout components (Navbar, SEO, ProtectedRoute)
+│   │   └── ui/             # Atomic design system UI components (Button, Modal, Spinner)
+│   ├── config/             # Application configuration and route lists
+│   ├── context/            # React Context providers (AuthContext)
+│   ├── features/           # Domain-driven features (Screaming Architecture)
+│   │   ├── appointments/   # Availability management, time slots, appointment lists
+│   │   ├── auth/           # Login, registration, TOTP security setup
+│   │   ├── billing/        # Payment histories, status pills
+│   │   ├── dashboard/      # Doctor dashboard, patient dashboard
+│   │   ├── user-journey/   # Walk-through onboarding guides
+│   │   └── video/          # Twilio video consult components
+│   ├── hooks/              # Reusable React hooks
+│   ├── pages/              # Global marketing/layout pages (Home, About, Contact)
+│   ├── services/           # Network and core service APIs (Axios client base configuration)
+│   ├── styles/             # Global CSS and themes
+│   ├── utils/              # Reusable helpers and validators
+│   ├── App.jsx             # Main application and router routing definitions
+│   ├── main.jsx            # React rendering entrypoint
+│   └── index.css           # Global Tailwind and base styles
+├── package.json            # Dependencies and scripts
+├── vite.config.js          # Vite config containing path resolutions (`@/*`)
+└── eslint.config.js        # ESLint configuration
 ```
 
 ## 🔧 Technology Stack
@@ -172,6 +147,8 @@ The application integrates with a backend API running on `http://localhost:8080`
 ### Availability Management
 - `POST /api/availability/{doctorId}` - Set doctor availability
 - `GET /api/availability/{doctorId}` - Get doctor availability
+- `PUT /api/availability/{doctorId}/{slotId}` - Update a specific availability slot's times and active status
+- `DELETE /api/availability/{doctorId}/{slotId}` - Delete an availability slot from the database
 
 ### Doctor Search
 - `GET /api/doctor/search` - Search doctors by name/specialization
@@ -308,6 +285,14 @@ For support and questions:
 - Check the documentation for common issues
 
 ## 🔄 Version History
+
+- **v1.3.0** - Feature-Based Architecture & Availability Upgrades
+  - Restructured codebase to Feature-Based (Domain-Driven) "Screaming" Architecture co-locating components, assets, pages, and API hooks.
+  - Configured Vite path resolution using absolute `@/*` aliases for clean imports.
+  - Upgraded Doctor Availability Page with slot-wise active/inactive availability toggling.
+  - Synchronized slot status dynamically with day-level global availability checkboxes (at-least-one-active slot rule).
+  - Replaced browser `window.confirm` dialogues with custom user-friendly React `<Modal>` components.
+  - Implemented multi-slot API updates (PUT `/api/availability/{doctorId}/{slotId}`) running concurrently on save.
 
 - **v1.2.0** - Payment history and enhanced UI
   - Patient payment history page with modern card design
