@@ -47,15 +47,23 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-    const isAuthRoute =
-      window.location.pathname === "/login" ||
-      window.location.pathname === "/register";
+    const requestUrl = error.config?.url || "";
 
-    // Only intercept 401s that happen outside the login/register pages
-    // and skip the logout call itself (avoid infinite loop)
-    const isLogoutCall = error.config?.url?.includes("/auth/logout");
+    // ── Requests that should NEVER trigger session-expiry flow ──────────────
+    // 1. Logout itself  → would cause an infinite loop
+    // 2. Login / register / TOTP endpoints → a 401 here means "wrong credentials",
+    //    not an expired session. LoginForm's own catch block handles those errors.
+    //    (Relying solely on window.location.pathname is fragile because React Router
+    //    may update the URL asynchronously before the response is processed.)
+    const isExemptCall =
+      requestUrl.includes("/auth/logout") ||
+      requestUrl.includes("/auth/login") ||
+      requestUrl.includes("/auth/register") ||
+      requestUrl.includes("/auth/totp") ||
+      requestUrl.includes("/auth/patient/register") ||
+      requestUrl.includes("/auth/doctor/register");
 
-    if (status === 401 && !isAuthRoute && !isLogoutCall) {
+    if (status === 401 && !isExemptCall) {
       handleSessionExpiry();
     }
 
