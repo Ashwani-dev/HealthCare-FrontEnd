@@ -529,7 +529,7 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
   return (
     <Box 
       sx={{ 
-        height: "100vh",
+        height: { xs: "100dvh", md: "100vh" }, // Use dynamic viewport height on mobile to prevent toolbar overlap
         width: "100vw",
         background: "linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%)",
         display: "flex",
@@ -543,7 +543,7 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
       {/* Header */}
       <Box 
         sx={{ 
-          p: { xs: 2, sm: 2.5, md: 3 }, 
+          p: { xs: 1.75, sm: 2.5, md: 3 }, 
           background: "rgba(255, 255, 255, 0.8)",
           backdropFilter: "blur(12px)",
           borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
@@ -555,13 +555,13 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
         }}
       >
         {/* Logo and Brand */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Logo size="medium" variant="default" />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+          <Logo size="small" variant="default" />
           <Box>
-            <Typography variant="subtitle1" sx={{ color: "#0F172A", fontWeight: "800", lineHeight: 1.2 }}>
+            <Typography variant="subtitle2" sx={{ color: "#0F172A", fontWeight: "800", lineHeight: 1.1 }}>
               TheraConnect
             </Typography>
-            <Typography variant="caption" sx={{ color: "#64748B", fontWeight: "600" }}>
+            <Typography variant="caption" sx={{ color: "#64748B", fontWeight: "600", fontSize: "0.7rem" }}>
               Private Consultation
             </Typography>
           </Box>
@@ -572,21 +572,21 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
           sx={{ 
             display: "flex", 
             alignItems: "center", 
-            gap: 1, 
+            gap: 0.75, 
             background: "rgba(241, 245, 249, 0.8)",
             border: "1px solid rgba(226, 232, 240, 0.6)",
-            px: 2,
-            py: 0.75,
+            px: 1.5,
+            py: 0.5,
             borderRadius: "9999px"
           }}
         >
           <span 
-            className={`w-2.5 h-2.5 rounded-full ${
+            className={`w-2 h-2 rounded-full ${
               hasRemoteParticipant ? "bg-emerald-500 animate-pulse" : "bg-blue-500 animate-pulse"
             }`}
           />
-          <Typography variant="caption" sx={{ color: "#475569", fontWeight: "700", textTransform: "uppercase", tracking: "0.5px" }}>
-            {hasRemoteParticipant ? 'In Session' : `Lobby: Awaiting ${userType === 'DOCTOR' ? 'Patient' : 'Therapist'}`}
+          <Typography variant="caption" sx={{ color: "#475569", fontWeight: "750", textTransform: "uppercase", tracking: "0.5px", fontSize: "0.65rem" }}>
+            {hasRemoteParticipant ? 'In Session' : 'Lobby'}
           </Typography>
         </Box>
       </Box>
@@ -638,7 +638,6 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
-                textAlign: "center",
                 zIndex: 1,
                 width: "90%",
                 maxWidth: 420,
@@ -656,16 +655,16 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 80,
-                  height: 80,
+                  width: 70,
+                  height: 70,
                   borderRadius: "50%",
                   background: "rgba(37, 99, 235, 0.08)",
-                  mb: 3,
+                  mb: 2.5,
                   position: "relative"
                 }}
               >
                 <CircularProgress 
-                  size={56} 
+                  size={48} 
                   thickness={3.5}
                   sx={{ color: "#2563EB" }} 
                 />
@@ -676,8 +675,9 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
                 sx={{ 
                   color: "#0F172A", 
                   fontWeight: "800",
-                  mb: 1.5,
-                  lineHeight: 1.3
+                  mb: 1,
+                  lineHeight: 1.3,
+                  fontSize: { xs: "1.1rem", md: "1.25rem" }
                 }}
               >
                 Waiting for others to join
@@ -688,8 +688,9 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
                 sx={{ 
                   color: "#64748B",
                   fontWeight: "500",
-                  lineHeight: 1.5,
-                  mb: 3
+                  lineHeight: 1.4,
+                  mb: 2.5,
+                  fontSize: { xs: "0.8rem", md: "0.875rem" }
                 }}
               >
                 The room is encrypted and secure. Once your {userType === 'DOCTOR' ? 'patient' : 'therapist'} connects, the video session will start automatically.
@@ -708,7 +709,7 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
                 }}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                <Typography variant="caption" sx={{ fontWeight: "700", letterSpacing: "0.2px" }}>
+                <Typography variant="caption" sx={{ fontWeight: "700", letterSpacing: "0.2px", fontSize: "0.7rem" }}>
                   Hardware Connection Active
                 </Typography>
               </Box>
@@ -722,8 +723,8 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
             position: "absolute",
             top: { xs: 12, sm: 20, md: 24 },
             right: { xs: 12, sm: 20, md: 24 },
-            width: { xs: 110, sm: 170, md: 230 },
-            height: { xs: 82, sm: 127, md: 172 }, // 4:3 Aspect ratio
+            width: { xs: 135, sm: 180, md: 240 },
+            height: { xs: 101, sm: 135, md: 180 }, // 4:3 Aspect ratio
             background: "#1E293B",
             borderRadius: "16px",
             overflow: "hidden",
@@ -760,8 +761,8 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
                 gap: 1
               }}
             >
-              <VideocamOffIcon sx={{ fontSize: { xs: 18, sm: 24 }, color: "#EF4444" }} />
-              <Typography variant="caption" sx={{ fontWeight: "700", color: "#94A3B8" }}>
+              <VideocamOffIcon sx={{ fontSize: { xs: 20, sm: 24 }, color: "#EF4444" }} />
+              <Typography variant="caption" sx={{ fontWeight: "700", color: "#94A3B8", fontSize: { xs: "8px", sm: "10px" } }}>
                 Camera Off
               </Typography>
             </Box>
@@ -793,14 +794,14 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
         <Box
           sx={{
             position: "absolute",
-            bottom: { xs: 16, sm: 24, md: 30 },
+            bottom: { xs: 20, sm: 24, md: 30 }, // Raised bottom offset to prevent iOS overlay overlaps
             left: "50%",
             transform: "translateX(-50%)",
             display: "flex",
-            gap: { xs: 2, sm: 3 },
+            gap: { xs: 2.25, sm: 3 },
             background: "rgba(255, 255, 255, 0.85)",
             borderRadius: "9999px",
-            p: { xs: 1.25, sm: 1.75 },
+            p: { xs: 1.5, sm: 1.75 },
             boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
             backdropFilter: "blur(12px)",
             border: "1px solid rgba(226, 232, 240, 0.8)",
@@ -811,8 +812,8 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
           <IconButton 
             onClick={toggleAudio} 
             sx={{ 
-              width: { xs: 46, sm: 54 },
-              height: { xs: 46, sm: 54 },
+              width: { xs: 50, sm: 54 },
+              height: { xs: 50, sm: 54 },
               color: isAudioEnabled ? "#2563EB" : "#EF4444",
               background: isAudioEnabled ? "rgba(37, 99, 235, 0.06)" : "rgba(239, 68, 68, 0.06)",
               border: `1.5px solid ${isAudioEnabled ? "rgba(37, 99, 235, 0.15)" : "rgba(239, 68, 68, 0.15)"}`,
@@ -823,15 +824,15 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
               transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             }}
           >
-            {isAudioEnabled ? <MicIcon sx={{ fontSize: { xs: 20, sm: 24 } }} /> : <MicOffIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />}
+            {isAudioEnabled ? <MicIcon sx={{ fontSize: { xs: 22, sm: 24 } }} /> : <MicOffIcon sx={{ fontSize: { xs: 22, sm: 24 } }} />}
           </IconButton>
           
           {/* Toggle Video */}
           <IconButton 
             onClick={toggleVideo} 
             sx={{ 
-              width: { xs: 46, sm: 54 },
-              height: { xs: 46, sm: 54 },
+              width: { xs: 50, sm: 54 },
+              height: { xs: 50, sm: 54 },
               color: isVideoEnabled ? "#2563EB" : "#EF4444",
               background: isVideoEnabled ? "rgba(37, 99, 235, 0.06)" : "rgba(239, 68, 68, 0.06)",
               border: `1.5px solid ${isVideoEnabled ? "rgba(37, 99, 235, 0.15)" : "rgba(239, 68, 68, 0.15)"}`,
@@ -842,15 +843,15 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
               transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             }}
           >
-            {isVideoEnabled ? <VideocamIcon sx={{ fontSize: { xs: 20, sm: 24 } }} /> : <VideocamOffIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />}
+            {isVideoEnabled ? <VideocamIcon sx={{ fontSize: { xs: 22, sm: 24 } }} /> : <VideocamOffIcon sx={{ fontSize: { xs: 22, sm: 24 } }} />}
           </IconButton>
           
           {/* End Call */}
           <IconButton 
             onClick={handleEndCall} 
             sx={{ 
-              width: { xs: 46, sm: 54 },
-              height: { xs: 46, sm: 54 },
+              width: { xs: 50, sm: 54 },
+              height: { xs: 50, sm: 54 },
               color: "white",
               background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
               boxShadow: "0 4px 12px rgba(239, 68, 68, 0.2)",
@@ -861,7 +862,7 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
               transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             }}
           >
-            <CallEndIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
+            <CallEndIcon sx={{ fontSize: { xs: 22, sm: 24 } }} />
           </IconButton>
         </Box>
       </Box>
