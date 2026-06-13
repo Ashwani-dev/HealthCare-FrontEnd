@@ -531,7 +531,7 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
       sx={{ 
         height: "100vh",
         width: "100vw",
-        background: "linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%)",
+        background: "linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%)",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
@@ -543,44 +543,70 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
       {/* Header */}
       <Box 
         sx={{ 
-          p: 3, 
-          background: "white",
-          borderBottom: "1px solid #e0e0e0",
+          p: { xs: 2, sm: 2.5, md: 3 }, 
+          background: "rgba(255, 255, 255, 0.8)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
+          zIndex: 10,
+          shrink: 0
         }}
       >
         {/* Logo and Brand */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Box sx={{ mr: 1 }}>
-            <Logo size="medium" variant="default" />
-          </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Logo size="medium" variant="default" />
           <Box>
-            <Typography variant="h6" sx={{ color: "#2C3E50", fontWeight: "bold" }}>
+            <Typography variant="subtitle1" sx={{ color: "#0F172A", fontWeight: "800", lineHeight: 1.2 }}>
               TheraConnect
             </Typography>
-            <Typography variant="body2" sx={{ color: "#7F8C8D", fontSize: "0.875rem" }}>
-              Video Consultation
+            <Typography variant="caption" sx={{ color: "#64748B", fontWeight: "600" }}>
+              Private Consultation
             </Typography>
           </Box>
         </Box>
         
-        {/* Status */}
-        <Typography variant="body2" sx={{ color: "#7F8C8D", fontWeight: "500" }}>
-          {hasRemoteParticipant ? 'In Session' : `Waiting for ${userType === 'DOCTOR' ? 'patient' : 'therapist'}`}
-        </Typography>
+        {/* Security / Status badge */}
+        <Box 
+          sx={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: 1, 
+            background: "rgba(241, 245, 249, 0.8)",
+            border: "1px solid rgba(226, 232, 240, 0.6)",
+            px: 2,
+            py: 0.75,
+            borderRadius: "9999px"
+          }}
+        >
+          <span 
+            className={`w-2.5 h-2.5 rounded-full ${
+              hasRemoteParticipant ? "bg-emerald-500 animate-pulse" : "bg-blue-500 animate-pulse"
+            }`}
+          />
+          <Typography variant="caption" sx={{ color: "#475569", fontWeight: "700", textTransform: "uppercase", tracking: "0.5px" }}>
+            {hasRemoteParticipant ? 'In Session' : `Lobby: Awaiting ${userType === 'DOCTOR' ? 'Patient' : 'Therapist'}`}
+          </Typography>
+        </Box>
       </Box>
 
-      {/* Main Video Area */}
+      {/* Main Video Workspace Frame */}
       <Box 
         sx={{ 
           flex: 1,
           position: "relative",
-          background: "transparent"
+          m: { xs: 0, sm: 2, md: 3 },
+          borderRadius: { xs: 0, sm: "24px" },
+          overflow: "hidden",
+          boxShadow: { xs: "none", sm: "0 10px 30px rgba(15, 23, 42, 0.04)" },
+          background: "#0F172A",
+          border: { xs: "none", sm: "1px solid rgba(226, 232, 240, 0.8)" },
+          display: "flex",
+          minHeight: 0
         }}
       >
-        {/* Remote participant video (full screen) */}
+        {/* Remote participant video (full frame) */}
         <Box
           sx={{
             width: "100%",
@@ -604,6 +630,7 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
           />
           <audio ref={remoteAudioRef} autoPlay playsInline style={{ display: "none" }} />
           
+          {/* Waiting/Lobby Screen Placeholder */}
           {!hasRemoteParticipant && (
             <Box
               sx={{
@@ -612,64 +639,97 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
                 left: "50%",
                 transform: "translate(-50%, -50%)",
                 textAlign: "center",
-                zIndex: 1
+                zIndex: 1,
+                width: "90%",
+                maxWidth: 420,
+                background: "rgba(255, 255, 255, 0.95)",
+                backdropFilter: "blur(16px)",
+                border: "1px solid rgba(226, 232, 240, 0.8)",
+                borderRadius: "24px",
+                p: { xs: 3, md: 5 },
+                boxShadow: "0 20px 25px -5px rgba(15, 23, 42, 0.05)"
               }}
             >
-              {/* Calming background element */}
+              {/* Pulsing ring wave */}
               <Box
                 sx={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  width: 200,
-                  height: 200,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 80,
+                  height: 80,
                   borderRadius: "50%",
-                  background: "radial-gradient(circle, rgba(74, 144, 226, 0.1) 0%, rgba(74, 144, 226, 0.05) 50%, transparent 100%)",
-                  animation: "pulse 3s ease-in-out infinite",
-                  "@keyframes pulse": {
-                    "0%, 100%": {
-                      transform: "translate(-50%, -50%) scale(1)",
-                      opacity: 0.3
-                    },
-                    "50%": {
-                      transform: "translate(-50%, -50%) scale(1.1)",
-                      opacity: 0.5
-                    }
-                  }
-                }}
-              />
-              
-              <Typography 
-                variant="h4" 
-                sx={{ 
-                  color: "#2C3E50", 
-                  fontWeight: "600",
-                  mb: 2,
-                  position: "relative",
-                  zIndex: 2
+                  background: "rgba(37, 99, 235, 0.08)",
+                  mb: 3,
+                  position: "relative"
                 }}
               >
-                Waiting for your {userType === 'DOCTOR' ? 'patient' : 'therapist'} to join...
+                <CircularProgress 
+                  size={56} 
+                  thickness={3.5}
+                  sx={{ color: "#2563EB" }} 
+                />
+              </Box>
+              
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  color: "#0F172A", 
+                  fontWeight: "800",
+                  mb: 1.5,
+                  lineHeight: 1.3
+                }}
+              >
+                Waiting for others to join
+              </Typography>
+              
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: "#64748B",
+                  fontWeight: "500",
+                  lineHeight: 1.5,
+                  mb: 3
+                }}
+              >
+                The room is encrypted and secure. Once your {userType === 'DOCTOR' ? 'patient' : 'therapist'} connects, the video session will start automatically.
               </Typography>
 
+              <Box 
+                sx={{ 
+                  display: "inline-flex", 
+                  alignItems: "center", 
+                  gap: 1, 
+                  color: "#10B981", 
+                  background: "rgba(16, 185, 129, 0.08)", 
+                  px: 2, 
+                  py: 0.75, 
+                  borderRadius: "8px" 
+                }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                <Typography variant="caption" sx={{ fontWeight: "700", letterSpacing: "0.2px" }}>
+                  Hardware Connection Active
+                </Typography>
+              </Box>
             </Box>
           )}
         </Box>
-
+ 
         {/* Local participant video (picture-in-picture) */}
         <Box
           sx={{
             position: "absolute",
-            top: 20,
-            right: 20,
-            width: 240,
-            height: 180,
-            background: "white",
-            borderRadius: 3,
+            top: { xs: 12, sm: 20, md: 24 },
+            right: { xs: 12, sm: 20, md: 24 },
+            width: { xs: 110, sm: 170, md: 230 },
+            height: { xs: 82, sm: 127, md: 172 }, // 4:3 Aspect ratio
+            background: "#1E293B",
+            borderRadius: "16px",
             overflow: "hidden",
-            border: "2px solid #ADD8E6",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)"
+            border: "2.5px solid rgba(255, 255, 255, 0.9)",
+            boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.2), 0 8px 10px -6px rgba(15, 23, 42, 0.2)",
+            zIndex: 5
           }}
         >
           <video 
@@ -690,115 +750,118 @@ const VideoCall = ({ appointmentId, userType, userId, onEnd, sessionData }) => {
             <Box
               sx={{
                 position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                background: "rgba(0,0,0,0.7)",
+                inset: 0,
+                background: "rgba(15, 23, 42, 0.85)",
                 color: "white",
-                px: 3,
-                py: 1.5,
-                borderRadius: 2,
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
+                justifyContent: "center",
                 gap: 1
               }}
             >
-              <VideocamOffIcon sx={{ fontSize: 18 }} />
-              <Typography variant="body2" sx={{ fontWeight: "500" }}>Camera Off</Typography>
+              <VideocamOffIcon sx={{ fontSize: { xs: 18, sm: 24 }, color: "#EF4444" }} />
+              <Typography variant="caption" sx={{ fontWeight: "700", color: "#94A3B8" }}>
+                Camera Off
+              </Typography>
             </Box>
           )}
           
-          {/* Patient name label */}
+          {/* Local Participant Name tag */}
           <Typography 
-            variant="body2" 
+            variant="caption" 
             sx={{ 
               position: "absolute", 
               bottom: 8, 
-              left: 12, 
-              color: "#2C3E50", 
-              background: "rgba(255,255,255,0.9)", 
-              px: 2, 
+              left: 8, 
+              color: "#0F172A", 
+              background: "rgba(255, 255, 255, 0.85)",
+              backdropFilter: "blur(6px)", 
+              px: 1.5, 
               py: 0.5,
-              borderRadius: 1.5,
-              fontWeight: "500",
-              fontSize: "0.875rem"
+              borderRadius: "6px",
+              fontWeight: "700",
+              fontSize: { xs: "9px", sm: "11px" },
+              border: "1px solid rgba(226, 232, 240, 0.5)"
             }}
           >
-            {getUserDisplayName()}
+            {getUserDisplayName()} (You)
           </Typography>
         </Box>
-
-        {/* Controls (floating at bottom) */}
+ 
+        {/* Controls dock (floating at bottom) */}
         <Box
           sx={{
-            position: "fixed",
-            bottom: 30,
+            position: "absolute",
+            bottom: { xs: 16, sm: 24, md: 30 },
             left: "50%",
             transform: "translateX(-50%)",
             display: "flex",
-            gap: 3,
-            background: "rgba(255,255,255,0.95)",
-            borderRadius: 4,
-            p: 2,
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            zIndex: 1000
+            gap: { xs: 2, sm: 3 },
+            background: "rgba(255, 255, 255, 0.85)",
+            borderRadius: "9999px",
+            p: { xs: 1.25, sm: 1.75 },
+            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(226, 232, 240, 0.8)",
+            zIndex: 10
           }}
         >
+          {/* Toggle Audio */}
           <IconButton 
             onClick={toggleAudio} 
             sx={{ 
-              width: 56,
-              height: 56,
-              color: isAudioEnabled ? "#4A90E2" : "#E74C3C",
-              background: isAudioEnabled ? "rgba(74, 144, 226, 0.1)" : "rgba(231, 76, 60, 0.1)",
-              border: `2px solid ${isAudioEnabled ? "#4A90E2" : "#E74C3C"}`,
+              width: { xs: 46, sm: 54 },
+              height: { xs: 46, sm: 54 },
+              color: isAudioEnabled ? "#2563EB" : "#EF4444",
+              background: isAudioEnabled ? "rgba(37, 99, 235, 0.06)" : "rgba(239, 68, 68, 0.06)",
+              border: `1.5px solid ${isAudioEnabled ? "rgba(37, 99, 235, 0.15)" : "rgba(239, 68, 68, 0.15)"}`,
               '&:hover': {
-                background: isAudioEnabled ? "rgba(74, 144, 226, 0.2)" : "rgba(231, 76, 60, 0.2)",
-                transform: "scale(1.05)"
+                background: isAudioEnabled ? "rgba(37, 99, 235, 0.12)" : "rgba(239, 68, 68, 0.12)",
+                transform: "scale(1.04)"
               },
-              transition: "all 0.2s ease-in-out"
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             }}
           >
-            {isAudioEnabled ? <MicIcon sx={{ fontSize: 24 }} /> : <MicOffIcon sx={{ fontSize: 24 }} />}
+            {isAudioEnabled ? <MicIcon sx={{ fontSize: { xs: 20, sm: 24 } }} /> : <MicOffIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />}
           </IconButton>
           
+          {/* Toggle Video */}
           <IconButton 
             onClick={toggleVideo} 
             sx={{ 
-              width: 56,
-              height: 56,
-              color: isVideoEnabled ? "#4A90E2" : "#E74C3C",
-              background: isVideoEnabled ? "rgba(74, 144, 226, 0.1)" : "rgba(231, 76, 60, 0.1)",
-              border: `2px solid ${isVideoEnabled ? "#4A90E2" : "#E74C3C"}`,
+              width: { xs: 46, sm: 54 },
+              height: { xs: 46, sm: 54 },
+              color: isVideoEnabled ? "#2563EB" : "#EF4444",
+              background: isVideoEnabled ? "rgba(37, 99, 235, 0.06)" : "rgba(239, 68, 68, 0.06)",
+              border: `1.5px solid ${isVideoEnabled ? "rgba(37, 99, 235, 0.15)" : "rgba(239, 68, 68, 0.15)"}`,
               '&:hover': {
-                background: isVideoEnabled ? "rgba(74, 144, 226, 0.2)" : "rgba(231, 76, 60, 0.2)",
-                transform: "scale(1.05)"
+                background: isVideoEnabled ? "rgba(37, 99, 235, 0.12)" : "rgba(239, 68, 68, 0.12)",
+                transform: "scale(1.04)"
               },
-              transition: "all 0.2s ease-in-out"
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             }}
           >
-            {isVideoEnabled ? <VideocamIcon sx={{ fontSize: 24 }} /> : <VideocamOffIcon sx={{ fontSize: 24 }} />}
+            {isVideoEnabled ? <VideocamIcon sx={{ fontSize: { xs: 20, sm: 24 } }} /> : <VideocamOffIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />}
           </IconButton>
           
+          {/* End Call */}
           <IconButton 
             onClick={handleEndCall} 
             sx={{ 
-              width: 56,
-              height: 56,
+              width: { xs: 46, sm: 54 },
+              height: { xs: 46, sm: 54 },
               color: "white",
-              background: "#E74C3C",
-              border: "2px solid #E74C3C",
+              background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
+              boxShadow: "0 4px 12px rgba(239, 68, 68, 0.2)",
               '&:hover': {
-                background: "#C0392B",
-                borderColor: "#C0392B",
-                transform: "scale(1.05)"
+                background: "linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)",
+                transform: "scale(1.04)"
               },
-              transition: "all 0.2s ease-in-out"
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             }}
           >
-            <CallEndIcon sx={{ fontSize: 24 }} />
+            <CallEndIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
           </IconButton>
         </Box>
       </Box>

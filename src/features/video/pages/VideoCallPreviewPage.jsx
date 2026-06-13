@@ -1,8 +1,22 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Spinner } from '@/components/ui';
+import Logo from '@/components/common/Logo';
+import { 
+  Mic, 
+  MicOff, 
+  Video, 
+  VideoOff, 
+  ArrowLeft, 
+  ArrowRight, 
+  CheckCircle2, 
+  AlertCircle,
+  VideoIcon,
+  ShieldAlert,
+  Sliders,
+  ShieldCheck
+} from 'lucide-react';
 
 const VideoCallPreviewPage = () => {
   const { appointmentId, userType } = useParams();
@@ -30,7 +44,7 @@ const VideoCallPreviewPage = () => {
         }
       } catch (err) {
         console.error('Error accessing media devices:', err);
-        setMediaError('Unable to access camera/microphone. Please check permissions.');
+        setMediaError('Unable to access camera or microphone. Please check your system/browser permissions.');
       }
     };
 
@@ -100,8 +114,8 @@ const VideoCallPreviewPage = () => {
   // Show loading while auth is being checked
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#EFF6FF] flex items-center justify-center">
-        <Spinner size="lg" text="Loading..." />
+      <div className="h-screen bg-gradient-to-br from-[#F8FAFC] to-[#EFF6FF] flex items-center justify-center">
+        <Spinner size="lg" text="Loading context..." />
       </div>
     );
   }
@@ -116,18 +130,16 @@ const VideoCallPreviewPage = () => {
   const validUserTypes = ['DOCTOR', 'PATIENT'];
   if (!validUserTypes.includes(userType?.toUpperCase())) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#EFF6FF] flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md text-center">
-          <div className="inline-block p-4 bg-red-100 rounded-full mb-6">
-            <svg className="w-16 h-16 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+      <div className="h-screen bg-[#0B0F19] flex items-center justify-center px-4">
+        <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-8 shadow-xl max-w-md text-center">
+          <div className="inline-block p-4 bg-red-500/10 border border-red-500/20 rounded-full mb-6">
+            <ShieldAlert className="w-12 h-12 text-red-500" />
           </div>
-          <h1 className="text-2xl font-bold text-[#1E293B] mb-4">Invalid User Type</h1>
-          <p className="text-[#64748B] mb-6">The specified user type is not valid.</p>
+          <h1 className="text-2xl font-bold text-slate-100 mb-3">Invalid User Type</h1>
+          <p className="text-slate-400 mb-6">The specified user role context is incorrect.</p>
           <button
             onClick={() => navigate('/dashboard')}
-            className="w-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition-all"
           >
             Back to Dashboard
           </button>
@@ -140,18 +152,16 @@ const VideoCallPreviewPage = () => {
   const userRole = user.role?.toUpperCase();
   if (userType?.toUpperCase() !== userRole) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#EFF6FF] flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md text-center">
-          <div className="inline-block p-4 bg-red-100 rounded-full mb-6">
-            <svg className="w-16 h-16 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+      <div className="h-screen bg-[#0B0F19] flex items-center justify-center px-4">
+        <div className="bg-[#1E293B] border border-slate-700/50 rounded-2xl p-8 shadow-xl max-w-md text-center">
+          <div className="inline-block p-4 bg-red-500/10 border border-red-500/20 rounded-full mb-6">
+            <ShieldAlert className="w-12 h-12 text-red-500" />
           </div>
-          <h1 className="text-2xl font-bold text-[#1E293B] mb-4">Access Denied</h1>
-          <p className="text-[#64748B] mb-6">You don't have permission to access this preview.</p>
+          <h1 className="text-2xl font-bold text-slate-100 mb-3">Access Denied</h1>
+          <p className="text-slate-400 mb-6">You don't have permission to access this consultation room.</p>
           <button
             onClick={() => navigate('/dashboard')}
-            className="w-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition-all"
           >
             Back to Dashboard
           </button>
@@ -161,143 +171,180 @@ const VideoCallPreviewPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#EFF6FF] flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
-        {/* Main Card Container */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          {/* Header Section */}
-          <div className="text-center mb-8">
-            {/* Camera Icon */}
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#DBEAFE] rounded-full mb-4">
-              <svg className="w-8 h-8 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-            </div>
-            
-            {/* Title */}
-            <h1 className="text-3xl font-bold text-[#1E293B] mb-3">
-              Test Your Camera & Microphone
-            </h1>
-            
-            {/* Helper Text */}
-            <p className="text-[#64748B] text-sm max-w-md mx-auto">
-              Make sure your devices are working properly before joining the consultation session
-            </p>
-          </div>
+    <div className="min-h-screen md:h-screen w-full md:overflow-hidden bg-gradient-to-br from-[#F8FAFC] via-[#EFF6FF] to-[#E2E8F0] flex items-center justify-center p-4 sm:p-6 md:p-8 relative">
+      {/* Decorative Light Blur Blobs */}
+      <div className="absolute top-10 left-10 w-72 h-72 bg-blue-400/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-400/10 rounded-full blur-[120px] pointer-events-none" />
 
-          {/* Video Preview Container */}
-          <div className="relative bg-[#111827] rounded-2xl overflow-hidden mb-6" style={{ aspectRatio: '16/9' }}>
-            {/* Video element - always rendered but hidden when camera is off */}
+      {/* Main Content Area - Grid on desktop, stack on mobile */}
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 items-stretch z-10 md:h-full md:max-h-[530px] my-auto">
+        
+        {/* Left Column: Video Feed (Mirrored) */}
+        <div className="col-span-1 md:col-span-7 flex flex-col justify-center relative min-h-0">
+          <div className="relative w-full aspect-video bg-[#1E293B] rounded-2xl overflow-hidden shadow-lg border border-slate-200/80 flex items-center justify-center">
+            
+            {/* Mirror Stream */}
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
-              className={`w-full h-full object-cover ${!isCameraEnabled ? 'hidden' : ''}`}
+              className={`w-full h-full object-cover scale-x-[-1] ${!isCameraEnabled ? 'hidden' : ''}`}
             />
             
             {/* Camera Off State */}
             {!isCameraEnabled && (
-              <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-[#111827]">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0F172A] space-y-4">
+                <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center shadow-inner">
+                  <VideoOff className="w-8 h-8 text-slate-400" />
+                </div>
                 <div className="text-center">
-                  <svg className="w-16 h-16 text-[#9CA3AF] mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth={2} />
-                  </svg>
-                  <p className="text-[#9CA3AF] text-sm">Camera Off</p>
+                  <p className="text-slate-200 font-semibold">Camera is Turned Off</p>
+                  <p className="text-xs text-slate-500">Unmute video to show preview</p>
                 </div>
               </div>
             )}
-            
-            {/* Preview Label */}
-            <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-              <p className="text-[#9CA3AF] text-sm font-medium">You (Preview)</p>
+
+            {/* Float Overlay: You (Preview) Tag */}
+            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-lg border border-slate-200/60 shadow-sm flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-slate-700 text-xs font-bold tracking-wide">Live Feed</span>
+            </div>
+
+            {/* Float Overlay Controls */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3.5 bg-white/90 backdrop-blur-lg px-5 py-3 rounded-full border border-slate-200/80 shadow-lg">
+              <button
+                onClick={toggleMicrophone}
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 transform active:scale-95 ${
+                  isMicEnabled
+                    ? 'bg-slate-100 hover:bg-slate-200 text-blue-600 border border-slate-200'
+                    : 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200/60'
+                }`}
+                title={isMicEnabled ? 'Mute Mic' : 'Unmute Mic'}
+              >
+                {isMicEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+              </button>
+
+              <button
+                onClick={toggleCamera}
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 transform active:scale-95 ${
+                  isCameraEnabled
+                    ? 'bg-slate-100 hover:bg-slate-200 text-blue-600 border border-slate-200'
+                    : 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200/60'
+                }`}
+                title={isCameraEnabled ? 'Stop Video' : 'Start Video'}
+              >
+                {isCameraEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+              </button>
             </div>
           </div>
-
-          {/* Error Message */}
-          {mediaError && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-              <p className="text-red-700 text-sm">{mediaError}</p>
-            </div>
-          )}
-
-          {/* Control Buttons */}
-          <div className="flex justify-center gap-4 mb-8">
-            {/* Microphone Button */}
-            <button
-              onClick={toggleMicrophone}
-              className={`w-14 h-14 rounded-full shadow-lg transition-all transform hover:scale-105 flex items-center justify-center ${
-                isMicEnabled
-                  ? 'bg-[#DBEAFE] hover:bg-[#BFDBFE]'
-                  : 'bg-[#FEE2E2] hover:bg-[#FECACA]'
-              }`}
-              title={isMicEnabled ? 'Mute Microphone' : 'Unmute Microphone'}
-            >
-              {isMicEnabled ? (
-                <svg className="w-6 h-6 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
-              ) : (
-                <svg className="w-6 h-6 text-[#EF4444]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                </svg>
-              )}
-            </button>
-
-            {/* Camera Button */}
-            <button
-              onClick={toggleCamera}
-              className={`w-14 h-14 rounded-full shadow-lg transition-all transform hover:scale-105 flex items-center justify-center ${
-                isCameraEnabled
-                  ? 'bg-[#DBEAFE] hover:bg-[#BFDBFE]'
-                  : 'bg-[#FEE2E2] hover:bg-[#FECACA]'
-              }`}
-              title={isCameraEnabled ? 'Turn Off Camera' : 'Turn On Camera'}
-            >
-              {isCameraEnabled ? (
-                <svg className="w-6 h-6 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              ) : (
-                <svg className="w-6 h-6 text-[#EF4444]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                </svg>
-              )}
-            </button>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            {/* Join Call Button */}
-            <button
-              onClick={handleJoinCall}
-              disabled={!!mediaError}
-              className="w-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              Join Call Now
-            </button>
-
-            {/* Back Button */}
-            <button
-              onClick={handleGoBack}
-              className="w-full bg-[#F1F5F9] text-[#64748B] font-semibold py-3 rounded-xl hover:bg-[#E2E8F0] transition-all"
-            >
-              Go Back to Dashboard
-            </button>
+          
+          {/* Subtitle / Note */}
+          <div className="mt-3 text-center md:text-left text-slate-500 text-[11px] flex items-center justify-center md:justify-start gap-1.5 px-1">
+            <Sliders className="w-3.5 h-3.5 text-slate-400" />
+            <span>Mirror view is active for natural perspective. Your stream will appear standard on-call.</span>
           </div>
         </div>
 
-        {/* Additional Info */}
-        <div className="mt-6 text-center">
-          <p className="text-[#64748B] text-sm">
-            Having trouble? Check your browser permissions for camera and microphone access.
-          </p>
+        {/* Right Column: Title and Joining Panel */}
+        <div className="col-span-1 md:col-span-5 bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-xl relative min-h-0">
+          
+          {/* Main Info */}
+          <div className="space-y-5">
+            {/* Header Brand and Secure badge */}
+            <div className="flex items-center justify-between mb-2">
+              <Logo size="medium" showText={true} text="TheraConnect" />
+              <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold bg-slate-100/80 px-2.5 py-1 rounded-full border border-slate-200/40">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                <span>SECURE</span>
+              </div>
+            </div>
+
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-blue-50 text-blue-600 border border-blue-100 mb-3">
+                <VideoIcon className="w-3 h-3" />
+                Hardware Test
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight leading-tight">
+                Ready to Join?
+              </h1>
+              <p className="text-slate-500 text-sm mt-1.5 leading-relaxed font-medium">
+                Check your camera and microphone status. When you are ready, step inside the private workspace.
+              </p>
+            </div>
+
+            {/* Error Message banner */}
+            {mediaError && (
+              <div className="p-3.5 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                <p className="text-red-700 text-xs font-semibold leading-relaxed">{mediaError}</p>
+              </div>
+            )}
+
+            {/* Hardware Status Checklist */}
+            <div className="space-y-2.5">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Device Checklist</h3>
+              <div className="bg-slate-50/50 rounded-xl border border-slate-100 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600 font-medium">Microphone Status</span>
+                  <div className="flex items-center gap-2">
+                    {isMicEnabled ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Active
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-red-600 font-bold bg-red-50 px-2.5 py-0.5 rounded-full border border-red-100">
+                        Muted
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="h-px bg-slate-100" />
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600 font-medium">Camera Stream</span>
+                  <div className="flex items-center gap-2">
+                    {isCameraEnabled ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Transmitting
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-red-650 font-bold bg-red-50 px-2.5 py-0.5 rounded-full border border-red-100">
+                        Disabled
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action buttons at bottom */}
+          <div className="mt-6 space-y-3 shrink-0">
+            <button
+              onClick={handleJoinCall}
+              disabled={!!mediaError}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-3.5 rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              <span>Join Session Now</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={handleGoBack}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs py-3 rounded-xl border border-slate-200/50 hover:text-slate-800 transition-all flex items-center justify-center gap-1.5"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Dashboard</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default VideoCallPreviewPage; 
+export default VideoCallPreviewPage;
